@@ -14,11 +14,8 @@
 //  Users of your hosted version never need to touch this.
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
-  WORKER_URL:    '',   // https://wavelength-proxy.yourname.workers.dev
-                       // Deploys wavelength-worker.js to Cloudflare (free)
-                       // Unlocks: Apple Music, AOTY, Metacritic, Bandcamp, AllMusic
-  DISCOGS_TOKEN:'',   // discogs.com/settings/developers — vinyl & reissues
-  STORE:        'us', // Apple Music store region (used by worker)
+  WORKER_URL:    'https://broken-river-2a46.kazpro527.workers.dev',
+  STORE:        'us',
 };
 // ═══════════════════════════════════════════════════════════════
 </script>
@@ -257,7 +254,6 @@ nav a.active{border-bottom-color:var(--ab);}
       <div class="pill"     id="pill-wk"><span class="dot"></span>Apple+More</div>
       <div class="pill on"  id="pill-mb"><span class="dot"></span>MusicBrainz</div>
       <div class="pill"     id="pill-oc"><span class="dot"></span>Official Charts</div>
-      <div class="pill"     id="pill-dc"><span class="dot"></span>Discogs</div>
     </div>
     <button class="btn" onclick="openSettings()">⚙ Keys</button>
     <button class="btn btn-g" onclick="openArtistModal()">⊕ Add Artists</button>
@@ -299,7 +295,6 @@ nav a.active{border-bottom-color:var(--ab);}
           <option value="oc">Official Charts UK</option>
           <option value="dz">Deezer</option>
           <option value="am">Apple Music</option>
-          <option value="dc">Discogs vinyl</option>
           <option value="aoty">Album of the Year</option>
         </select>
       </div>
@@ -307,7 +302,6 @@ nav a.active{border-bottom-color:var(--ab);}
       <span id="cnt-oc" style="display:none">—</span>
       <span id="cnt-dz" style="display:none">—</span>
       <span id="cnt-am" style="display:none">—</span>
-      <span id="cnt-dc" style="display:none">—</span>
       <span id="cnt-aoty" style="display:none">—</span>
       <span id="cnt-mc" style="display:none">—</span>
       <span id="cnt-alm" style="display:none">—</span>
@@ -404,14 +398,6 @@ nav a.active{border-bottom-color:var(--ab);}
       <div class="fh" style="background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;color:var(--c2)">No key needed — MusicBrainz is a free open database. Artist search and the For You tab work automatically.</div>
     </div>
     <div class="fg">
-      <div class="fl">
-        <span>Discogs Token <span style="color:var(--blue);font-size:9px">— vinyl & reissues</span></span>
-        <a href="https://www.discogs.com/settings/developers" target="_blank">Get free token →</a>
-      </div>
-      <input class="fi" id="in-dc" type="password" placeholder="Paste Discogs token…" autocomplete="off">
-      <div class="fh">Free · Adds vinyl pressings & reissues from Discogs' 15M+ database</div>
-    </div>
-    <div class="fg">
       <div class="fl"><span>Store Region <span style="color:var(--c3);font-size:9px">— Apple Music (via worker)</span></span></div>
       <select class="fi" id="in-store" style="font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">
         <option value="us">United States</option>
@@ -451,7 +437,6 @@ nav a.active{border-bottom-color:var(--ab);}
 <script>
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let workerUrl = CONFIG.WORKER_URL    || localStorage.getItem('wl_worker') || '';
-let dcToken   = CONFIG.DISCOGS_TOKEN|| localStorage.getItem('wl_dc')     || '';
 let store     = CONFIG.STORE        || localStorage.getItem('wl_store')  || 'us';
 
 let releases  = [];
@@ -516,134 +501,6 @@ async function fetchDeezer(){
   }
 }
 
-// ─── DISCOGS ─────────────────────────────────────────────────────────────────
-async function fetchDiscogs(){
-  if(!dcToken)return[];
-  const yr=new Date().getFullYear();
-  try{
-    const[v,re]=await Promise.all([
-      fetch(`https://api.discogs.com/database/search?format=Vinyl&year=${yr}&type=release&sort=year&sort_order=desc&per_page=50&token=${dcToken}`).then(r=>r.json()),
-      fetch(`https://api.discogs.com/database/search?format=Reissue&year=${yr}&type=release&sort=year&sort_order=desc&per_page=25&token=${dcToken}`).then(r=>r.json()),
-    ]);
-    const seen=new Set();
-    return[...v.results||[],...re.results||[]].filter(r=>{if(seen.has(r.id))return false;seen.add(r.id);return true;}).map(r=>{
-      const raw=r.title||'',dash=raw.indexOf(' - ');
-      const artist=dash>-1?raw.slice(0,dash):'Unknown';
-      const title=dash>-1?raw.slice(dash+3):raw;
-      const fmts=(r.formats||[]).map(f=>f.name).concat(r.format||[]);
-      const isReissue=fmts.some(f=>/reissue|remaster/i.test(f));
-      return{id:'dc-'+r.id,title,artist,type:isReissue?'Reissue':'Vinyl',date:r.year?String(r.year):'',dateRaw:r.year?`${r.year}-12-31`:'',genre:(r.genre||r.style||[])[0]||null,source:'dc',img:r.cover_image||r.thumb||null,isNew:false};
-    });
-  }catch{return[];}
-}
-
-// ─── MUSICBRAINZ ─────────────────────────────────────────────────────────────
-// Rate-limited queue: MB asks for max 1 req/sec. We do 1 per 1.1s to be safe.
-const MBQ=[]; let MBBusy=false, MBLast=0;
-const MB='https://musicbrainz.org/ws/2';
-
-function mbGet(url){
-  return new Promise((ok,fail)=>{MBQ.push({url,ok,fail});mbPump();});
-}
-async function mbPump(){
-  if(MBBusy||!MBQ.length)return;
-  MBBusy=true;
-  const{url,ok,fail}=MBQ.shift();
-  const wait=Math.max(0,1100-(Date.now()-MBLast));
-  if(wait)await sleep(wait);
-  MBLast=Date.now();
-  try{
-    const r=await fetch(url,{headers:{Accept:'application/json','User-Agent':'Wavelength/1.0'}});
-    if(!r.ok)throw new Error(r.status);
-    ok(await r.json());
-  }catch(e){fail(e);}
-  MBBusy=false;
-  mbPump();
-}
-
-// Search artists by name — returns [{name, mbid, area, type, tags}]
-async function mbSearchArtist(query){
-  try{
-    const d=await mbGet(`${MB}/artist?query=${encodeURIComponent(query)}&fmt=json&limit=8`);
-    return(d.artists||[]).map(a=>({
-      name:a.name,
-      mbid:a.id,
-      area:a.area?.name||a.country||'',
-      type:a.type||'',
-      tags:(a.tags||[]).sort((x,y)=>y.count-x.count).slice(0,3).map(t=>t.name),
-      disambiguation:a.disambiguation||'',
-    }));
-  }catch{return[];}
-}
-
-// Fetch recent release-groups for a specific artist MBID
-// Much faster to update than the global search index
-async function mbArtistReleases(mbid, weeksBack=4){
-  const since=new Date(Date.now()-weeksBack*7*864e5).toISOString().slice(0,10);
-  try{
-    // Fetch up to 50 release-groups for this artist, filter by date client-side
-    const d=await mbGet(`${MB}/release-group?artist=${mbid}&fmt=json&limit=50&type=album|single|ep`);
-    return(d['release-groups']||[]).filter(rg=>{
-      const dt=rg['first-release-date']||'';
-      return dt&&dt>=since;
-    }).map(rg=>mbRgToRelease(rg));
-  }catch{return[];}
-}
-
-// Fetch artists related/similar to a given MBID via MB's relation system
-async function mbSimilarArtists(mbid){
-  try{
-    const d=await mbGet(`${MB}/artist/${mbid}?inc=artist-rels&fmt=json`);
-    const rels=d.relations||[];
-    // MB relation types that indicate similarity/influence
-    const similarTypes=new Set(['member of band','supporting musician','involved with','tribute','similar','influenced by','is influenced by']);
-    return rels
-      .filter(r=>similarTypes.has(r.type?.toLowerCase())&&r.artist)
-      .map(r=>({name:r.artist.name, mbid:r.artist.id}))
-      .slice(0,15);
-  }catch{return[];}
-}
-
-function mbRgToRelease(rg){
-  const credits=rg['artist-credit']||[];
-  const artist=credits.map(c=>typeof c==='string'?c:(c.name||c.artist?.name||'')+(c.joinphrase||'')).join('')||'Unknown';
-  const pt=rg['primary-type']||'Album';
-  const sec=rg['secondary-types']||[];
-  const type=['Compilation','Remix','Live'].some(t=>sec.includes(t))?'Reissue':pt;
-  const dateRaw=rg['first-release-date']||'';
-  const tags=(rg.tags||[]).sort((a,b)=>b.count-a.count);
-  const isNew=dateRaw?(Date.now()-new Date(dateRaw+'T00:00:00').getTime())<4*864e5:false;
-  return{
-    id:'mb-'+rg.id, mbid:rg.id, title:rg.title, artist, type,
-    date:relDate(dateRaw), dateRaw,
-    genre:tags[0]?.name||null,
-    source:'mb',
-    img:`https://coverartarchive.org/release-group/${rg.id}/front-250`,
-    url:`https://musicbrainz.org/release-group/${rg.id}`,
-    isNew,
-  };
-}
-
-// ─── WORKER PROXY ────────────────────────────────────────────────────────────
-async function workerFetch(source){
-  if(!workerUrl)return[];
-  try{
-    const base=workerUrl.replace(/\/+$/,'');
-    let url=source==='applemusic'?`${base}/applemusic?store=${store}`:`${base}/${source}`;
-    // OC is never cached by the worker — also bust browser cache so old empty results don't stick
-    const fetchOpts = source==='officialcharts' ? {cache:'no-store'} : {};
-    const r=await fetch(url, fetchOpts);
-    if(!r.ok)return[];
-    const d=await r.json();
-    return(d.releases||[]).map(rel=>{
-      if(rel.dateRaw&&(!rel.date||rel.date===rel.dateRaw)){
-        rel.date=relDate(rel.dateRaw);
-      }
-      return rel;
-    });
-  }catch(e){console.warn(`Worker [${source}]:`,e);return[];}
-}
-
 // ─── ARTIST SEARCH (Deezer) ───────────────────────────────────────────────────
 async function dzSearchArtist(term){
   try{
@@ -659,7 +516,6 @@ function updatePills(){
   setPill('pill-wk',!!workerUrl);
   setPill('pill-mb',true);
   setPill('pill-oc',!!workerUrl);
-  setPill('pill-dc',!!dcToken);
 }
 function setPill(id,on){
   const el=document.getElementById(id);if(!el)return;
@@ -731,8 +587,7 @@ async function loadBrowse(force=false){
   // Deezer — always on, no config needed
   const dzR = await fetchDeezer();
 
-  // Discogs — if token set
-  const dcR = await fetchDiscogs();
+  const dcR = [];
 
   // Worker sources — fire in parallel if URL configured
   let amR=[], aotyR=[], mcR=[], almR=[], bcR=[], ocR=[];
@@ -755,7 +610,7 @@ async function loadBrowse(force=false){
   const dedupSeen = new Set();
   const merged = [];
   // Priority order: oc > am > dz > aoty > mc > alm > dc
-  for(const r of [...ocR,...amR,...dzR,...aotyR,...mcR,...almR,...dcR]){
+  for(const r of [...ocR,...amR,...dzR,...aotyR,...mcR,...almR]){
     const k = dedupKey(r);
     if(dedupSeen.has(k)){
       // Upgrade existing entry's artwork if this source has better art
@@ -780,7 +635,7 @@ async function loadBrowse(force=false){
   renderBrowse();
   renderEditorial();
 
-  const total=ocR.length+amR.length+dzR.length+dcR.length+aotyR.length+mcR.length+almR.length;
+  const total=ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
   let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
   if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
   st+=`</div>`;
@@ -788,13 +643,11 @@ async function loadBrowse(force=false){
   if(ocR.length)srcParts.push(`${ocR.length} Official Charts`);
   if(amR.length)srcParts.push(`${amR.length} Apple Music`);
   if(dzR.length)srcParts.push(`${dzR.length} Deezer`);
-  if(dcR.length)srcParts.push(`${dcR.length} Discogs`);
   if(aotyR.length)srcParts.push(`${aotyR.length} AOTY`);
   if(mcR.length)srcParts.push(`${mcR.length} Metacritic`);
   if(almR.length)srcParts.push(`${almR.length} AllMusic`);
   if(srcParts.length)st+=`<div class="st" style="margin-left:4px;color:var(--c3)">· ${srcParts.join(' · ')}</div>`;
   if(!workerUrl)st+=`<div class="st" style="margin-left:8px"><div class="sdot doff"></div>Add Worker for Official Charts + Apple Music + scores <button class="btn" style="margin-left:6px;padding:3px 9px;font-size:9px" onclick="openSettings()">Set up</button></div>`;
-  if(!dcToken)st+=`<div class="st" style="margin-left:8px"><div class="sdot doff"></div>Add Discogs token for vinyl <button class="btn" style="margin-left:6px;padding:3px 9px;font-size:9px" onclick="openSettings()">Add</button></div>`;
   showStatus(st);
 }
 
@@ -867,12 +720,11 @@ function showStatus(html){document.getElementById('status-bar').innerHTML=html;}
 
 function updateCounts(){
   const cnt=s=>releases.filter(r=>r.source===s).length;
-  const ocN=cnt('oc'), dzN=cnt('dz'), amN=cnt('am'), dcN=cnt('dc'), aotyN=cnt('aoty');
+  const ocN=cnt('oc'), dzN=cnt('dz'), amN=cnt('am'), aotyN=cnt('aoty');
   document.getElementById('cnt-all').textContent=releases.length;
   document.getElementById('cnt-oc').textContent=ocN;
   document.getElementById('cnt-dz').textContent=dzN;
   document.getElementById('cnt-am').textContent=amN;
-  document.getElementById('cnt-dc').textContent=dcN;
   document.getElementById('cnt-aoty').textContent=aotyN;
   document.getElementById('cnt-mc').textContent=cnt('mc');
   document.getElementById('cnt-alm').textContent=cnt('alm');
@@ -883,7 +735,7 @@ function updateCounts(){
     dd.options[1].text=`Official Charts UK${ocN?` (${ocN})`:''}`;
     dd.options[2].text=`Deezer${dzN?` (${dzN})`:''}`;
     dd.options[3].text=`Apple Music${amN?` (${amN})`:''}`;
-    dd.options[4].text=`Discogs vinyl${dcN?` (${dcN})`:''}`;
+
     dd.options[5].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
   }
 }
@@ -897,7 +749,7 @@ function buildGenreSidebar(){
     if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
     return r.genre;
   });
-  if(!base.length){document.getElementById('genre-sb').innerHTML=`<div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Genre data loads from Deezer and Discogs.</div>`;return;}
+  if(!base.length){document.getElementById('genre-sb').innerHTML=`<div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Genre data loads from Deezer and Apple Music.</div>`;return;}
   const map={};base.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
   const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
   let h=`<div class="fp on" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${base.length}</span></div>`;
@@ -1229,16 +1081,13 @@ function toggleLibRec(id,btn){toggleLib(id);const inLib=library.some(x=>x.id===i
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
 function openSettings(){
   document.getElementById('in-worker').value=workerUrl;
-  document.getElementById('in-dc').value=dcToken;
   document.getElementById('in-store').value=store;
   document.getElementById('ov-settings').classList.add('open');
 }
 function saveSettings(){
   workerUrl=document.getElementById('in-worker').value.trim().replace(/\/+$/,'');
-  dcToken=document.getElementById('in-dc').value.trim();
   store=document.getElementById('in-store').value;
   localStorage.setItem('wl_worker',workerUrl);
-  localStorage.setItem('wl_dc',dcToken);
   localStorage.setItem('wl_store',store);
   updatePills();closeOv('ov-settings');toast('Settings saved');
   loadBrowse(true);
