@@ -752,7 +752,15 @@ function buildGenreSidebar(){
   if(!base.length){document.getElementById('genre-sb').innerHTML=`<div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Genre data loads from Deezer and Apple Music.</div>`;return;}
   const map={};base.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
   const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
-  let h=`<div class="fp on" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${base.length}</span></div>`;
+  // Total filtered releases (regardless of whether they have genre data)
+  const filteredTotal = releases.filter(r=>{
+    if(typeF!=='all'&&r.type!==typeF)return false;
+    if(srcF!=='all'&&r.source!==srcF)return false;
+    if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
+    if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
+    return true;
+  }).length;
+  let h=`<div class="fp on" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${filteredTotal}</span></div>`;
   h+=genres.map(([g,c])=>`<div class="fp" data-genre="${esc(g)}"><span class="fp-n">${esc(g)}</span><span class="fp-c">${c}</span></div>`).join('');
   document.getElementById('genre-sb').innerHTML=h;
   document.querySelectorAll('#genre-sb .fp').forEach(el=>{
@@ -1122,9 +1130,9 @@ function toast(msg){
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Clear stale cache from older versions of the app
-const CACHE_VERSION = '5';
+const CACHE_VERSION = '6';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
-  ['wl_mb_cache'].forEach(k=>localStorage.removeItem(k));
+  ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
   mbReleasesCache = {};
 }
