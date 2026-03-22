@@ -576,81 +576,77 @@ function card(rel){
 function skels(n){return Array(n).fill(`<div class="skel"><div class="sk" style="width:100%;aspect-ratio:1"></div><div style="padding:12px 13px"><div class="sk" style="height:10px;width:75%;margin-bottom:8px"></div><div class="sk" style="height:10px;width:55%;margin-bottom:8px"></div><div class="sk" style="height:8px;width:40%"></div></div></div>`).join('');}
 
 // ─── BROWSE ───────────────────────────────────────────────────────────────────
+// ─── BROWSER-SIDE SESSION CACHE ───────────────────────────────────────────────
+const SESSION_TTL = 30*60*1000;
+function sGet(k){try{const e=JSON.parse(sessionStorage.getItem(k));return(e&&Date.now()-e.ts<SESSION_TTL)?e.d:null;}catch{return null;}}
+function sSet(k,d){try{sessionStorage.setItem(k,JSON.stringify({d,ts:Date.now()}));}catch{}}
+
+function mergeAll(ocR,amR,dzR,aotyR,mcR,almR){
+  const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const key=r=>norm(r.artist)+'|'+norm(r.title);
+  const seen=new Set(),out=[];
+  for(const r of [...ocR,...amR,...dzR,...aotyR,...mcR,...almR]){
+    const k=key(r);
+    if(seen.has(k)){const ex=out.find(x=>key(x)===k);if(ex){if(!ex.img&&r.img)ex.img=r.img;if(!ex.score&&r.score)ex.score=r.score;}continue;}
+    seen.add(k);out.push(r);
+  }
+  return out.sort((a,b)=>{if(a.isNew&&!b.isNew)return -1;if(!a.isNew&&b.isNew)return 1;return(b.dateRaw||'').localeCompare(a.dateRaw||'');});
+}
+
 async function loadBrowse(force=false){
   if(!force&&releases.length){renderBrowse();return;}
   document.getElementById('browse-body').innerHTML=`<div class="grid">${skels(18)}</div>`;
   document.getElementById('rsum').style.display='none';
   document.getElementById('ed-section').style.display='none';
-  showStatus(`<div class="st"><div class="spin"></div>Fetching from Deezer…</div>`);
   setDateLabel();
+  showStatus(`<div class="st"><div class="spin"></div>Loading…</div>`);
 
-  // Deezer — always on, no config needed
-  const dzR = await fetchDeezer();
+  // Phase 1: Deezer + OC + Apple Music — show results immediately
+  // OC and AM are cached in sessionStorage for 30 mins so repeat visits are instant
+  const [dzR, ocR, amR] = await Promise.all([
+    fetchDeezer(),
+    (force?null:sGet('wl_oc')) ? Promise.resolve(sGet('wl_oc')) : workerFetch('officialcharts').then(r=>{if(r.length)sSet('wl_oc',r);return r;}),
+    (force?null:sGet('wl_am')) ? Promise.resolve(sGet('wl_am')) : workerFetch('applemusic').then(r=>{if(r.length)sSet('wl_am',r);return r;}),
+  ]);
 
-  const dcR = [];
+  // Show immediately with whatever we have
+  let aotyR=[], mcR=[], almR=[], bcR=[];
+  const cached2 = force?null:sGet('wl_slow');
+  if(cached2){({aotyR,mcR,almR,bcR}=cached2);}
 
-  // Worker sources — fire in parallel if URL configured
-  let amR=[], aotyR=[], mcR=[], almR=[], bcR=[], ocR=[];
-  if(workerUrl){
-    [amR, aotyR, mcR, almR, bcR, ocR] = await Promise.all([
-      workerFetch('applemusic'),
+  releases=mergeAll(ocR,amR,dzR,aotyR,mcR,almR);
+  editorial=[...bcR,...almR];
+  updateCounts();buildGenreSidebar();renderBrowse();renderEditorial();
+  if(!cached2)showStatus(`<div class="st"><div class="spin"></div>${releases.length} releases · fetching scores…</div>`);
+
+  // Phase 2: Slower sources (AOTY, MC, AllMusic, Bandcamp) — update quietly in background
+  if(!cached2){
+    [aotyR,mcR,almR,bcR]=await Promise.all([
       workerFetch('aoty'),
       workerFetch('metacritic'),
       workerFetch('allmusic'),
       workerFetch('bandcamp'),
-      workerFetch('officialcharts'),
     ]);
+    sSet('wl_slow',{aotyR,mcR,almR,bcR});
+    releases=mergeAll(ocR,amR,dzR,aotyR,mcR,almR);
+    editorial=[...bcR,...almR];
+    updateCounts();buildGenreSidebar();renderBrowse();renderEditorial();
   }
-
-  // Merge: Apple Music + AOTY/MC/AllMusic go into the main grid
-  // Bandcamp goes into the editorial strip
-  // Deduplicate across sources by normalised artist+title
-  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-  const dedupKey = r => norm(r.artist) + '|' + norm(r.title);
-  const dedupSeen = new Set();
-  const merged = [];
-  // Priority order: oc > am > dz > aoty > mc > alm > dc
-  for(const r of [...ocR,...amR,...dzR,...aotyR,...mcR,...almR]){
-    const k = dedupKey(r);
-    if(dedupSeen.has(k)){
-      // Upgrade existing entry's artwork if this source has better art
-      const existing = merged.find(x=>dedupKey(x)===k);
-      if(existing&&!existing.img&&r.img)existing.img=r.img;
-      if(existing&&!existing.score&&r.score)existing.score=r.score;
-      continue;
-    }
-    dedupSeen.add(k);
-    merged.push(r);
-  }
-
-  releases = merged.sort((a,b)=>{
-    if(a.isNew&&!b.isNew)return -1;
-    if(!a.isNew&&b.isNew)return 1;
-    return(b.dateRaw||'').localeCompare(a.dateRaw||'');
-  });
-  editorial=[...bcR,...almR];
-
-  updateCounts();
-  buildGenreSidebar();
-  renderBrowse();
-  renderEditorial();
 
   const total=ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
   let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
   if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
   st+=`</div>`;
-  const srcParts=[];
-  if(ocR.length)srcParts.push(`${ocR.length} Official Charts`);
-  if(amR.length)srcParts.push(`${amR.length} Apple Music`);
-  if(dzR.length)srcParts.push(`${dzR.length} Deezer`);
-  if(aotyR.length)srcParts.push(`${aotyR.length} AOTY`);
-  if(mcR.length)srcParts.push(`${mcR.length} Metacritic`);
-  if(almR.length)srcParts.push(`${almR.length} AllMusic`);
-  if(srcParts.length)st+=`<div class="st" style="margin-left:4px;color:var(--c3)">· ${srcParts.join(' · ')}</div>`;
-  if(!workerUrl)st+=`<div class="st" style="margin-left:8px"><div class="sdot doff"></div>Add Worker for Official Charts + Apple Music + scores <button class="btn" style="margin-left:6px;padding:3px 9px;font-size:9px" onclick="openSettings()">Set up</button></div>`;
+  const sp=[];
+  if(ocR.length)sp.push(`${ocR.length} Official Charts`);
+  if(amR.length)sp.push(`${amR.length} Apple Music`);
+  if(dzR.length)sp.push(`${dzR.length} Deezer`);
+  if(aotyR.length)sp.push(`${aotyR.length} AOTY`);
+  if(mcR.length)sp.push(`${mcR.length} Metacritic`);
+  if(almR.length)sp.push(`${almR.length} AllMusic`);
+  if(sp.length)st+=`<div class="st" style="margin-left:4px;color:var(--c3)">· ${sp.join(' · ')}</div>`;
   showStatus(st);
 }
-
 function setDateLabel(){
   const d=new Date();
   document.getElementById('date-lbl').textContent=
