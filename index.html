@@ -593,59 +593,57 @@ function mergeAll(ocR,amR,dzR,aotyR,mcR,almR){
   return out.sort((a,b)=>{if(a.isNew&&!b.isNew)return -1;if(!a.isNew&&b.isNew)return 1;return(b.dateRaw||'').localeCompare(a.dateRaw||'');});
 }
 
+// ─── BROWSE ───────────────────────────────────────────────────────────────────
+
+async function workerFetch(endpoint) {
+  if (!workerUrl) return [];
+  try {
+    const r = await fetch(`${workerUrl}/${endpoint}`);
+    const data = await r.json();
+    return data.releases || [];
+  } catch {
+    return [];
+  }
+}
+
 async function loadBrowse(force=false){
   if(!force&&releases.length){renderBrowse();return;}
   document.getElementById('browse-body').innerHTML=`<div class="grid">${skels(18)}</div>`;
   document.getElementById('rsum').style.display='none';
   document.getElementById('ed-section').style.display='none';
   setDateLabel();
-  showStatus(`<div class="st"><div class="spin"></div>Loading…</div>`);
+  showStatus(`<div class="st"><div class="spin"></div>Loading from cache…</div>`);
 
-  // Phase 1: Deezer + OC + Apple Music — show results immediately
-  // OC and AM are cached in sessionStorage for 30 mins so repeat visits are instant
-  const [dzR, ocR, amR] = await Promise.all([
-    fetchDeezer(),
-    (force?null:sGet('wl_oc')) ? Promise.resolve(sGet('wl_oc')) : workerFetch('officialcharts').then(r=>{if(r.length)sSet('wl_oc',r);return r;}),
-    (force?null:sGet('wl_am')) ? Promise.resolve(sGet('wl_am')) : workerFetch('applemusic').then(r=>{if(r.length)sSet('wl_am',r);return r;}),
-  ]);
-
-  // Show immediately with whatever we have
-  let aotyR=[], mcR=[], almR=[], bcR=[];
-  const cached2 = force?null:sGet('wl_slow');
-  if(cached2){({aotyR,mcR,almR,bcR}=cached2);}
-
-  releases=mergeAll(ocR,amR,dzR,aotyR,mcR,almR);
-  editorial=[...bcR,...almR];
-  updateCounts();buildGenreSidebar();renderBrowse();renderEditorial();
-  if(!cached2)showStatus(`<div class="st"><div class="spin"></div>${releases.length} releases · fetching scores…</div>`);
-
-  // Phase 2: Slower sources (AOTY, MC, AllMusic, Bandcamp) — update quietly in background
-  if(!cached2){
-    [aotyR,mcR,almR,bcR]=await Promise.all([
+  // 🚨 Fetch everything from your fast Worker simultaneously.
+  // No more slow, direct scraping from the browser!
+  try {
+    const [dzR, ocR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
+      workerFetch('deezer'),
+      workerFetch('officialcharts'),
+      workerFetch('applemusic'),
       workerFetch('aoty'),
       workerFetch('metacritic'),
       workerFetch('allmusic'),
-      workerFetch('bandcamp'),
+      workerFetch('bandcamp')
     ]);
-    sSet('wl_slow',{aotyR,mcR,almR,bcR});
-    releases=mergeAll(ocR,amR,dzR,aotyR,mcR,almR);
-    editorial=[...bcR,...almR];
-    updateCounts();buildGenreSidebar();renderBrowse();renderEditorial();
-  }
 
-  const total=ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
-  let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
-  if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
-  st+=`</div>`;
-  const sp=[];
-  if(ocR.length)sp.push(`${ocR.length} Official Charts`);
-  if(amR.length)sp.push(`${amR.length} Apple Music`);
-  if(dzR.length)sp.push(`${dzR.length} Deezer`);
-  if(aotyR.length)sp.push(`${aotyR.length} AOTY`);
-  if(mcR.length)sp.push(`${mcR.length} Metacritic`);
-  if(almR.length)sp.push(`${almR.length} AllMusic`);
-  if(sp.length)st+=`<div class="st" style="margin-left:4px;color:var(--c3)">· ${sp.join(' · ')}</div>`;
-  showStatus(st);
+    releases = mergeAll(ocR,amR,dzR,aotyR,mcR,almR);
+    editorial = [...bcR,...almR];
+
+    updateCounts();
+    buildGenreSidebar();
+    renderBrowse();
+    renderEditorial();
+
+    const total=ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
+    let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
+    if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
+    st+=`</div>`;
+    showStatus(st);
+
+  } catch (e) {
+    showStatus(`<div class="st" style="color:var(--red)">Error loading: ${e.message}</div>`);
+  }
 }
 function setDateLabel(){
   const d=new Date();
