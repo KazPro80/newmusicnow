@@ -298,7 +298,6 @@ nav a.active{border-bottom-color:var(--ab);}
           <option value="aoty">Album of the Year</option>
         </select>
       </div>
-      <!-- hidden count spans still needed for updateCounts() -->
       <span id="cnt-oc" style="display:none">—</span>
       <span id="cnt-dz" style="display:none">—</span>
       <span id="cnt-am" style="display:none">—</span>
@@ -314,7 +313,6 @@ nav a.active{border-bottom-color:var(--ab);}
 
   <main class="main">
 
-    <!-- BROWSE -->
     <div id="tab-browse" class="tab-page active">
       <div class="pg-hdr">
         <div>
@@ -344,7 +342,6 @@ nav a.active{border-bottom-color:var(--ab);}
       </div>
     </div>
 
-    <!-- FOR YOU -->
     <div id="tab-foryou" class="tab-page">
       <div class="pg-hdr">
         <div><div class="pg-title">For You</div><div class="pg-sub">MusicBrainz artist relations · Claude editorial picks</div></div>
@@ -355,7 +352,6 @@ nav a.active{border-bottom-color:var(--ab);}
       </div>
     </div>
 
-    <!-- MY ARTISTS -->
     <div id="tab-myartists" class="tab-page">
       <div class="pg-hdr">
         <div><div class="pg-title">My Artists <span class="lc" id="artist-count">0</span></div><div class="pg-sub">New releases flagged automatically</div></div>
@@ -367,7 +363,6 @@ nav a.active{border-bottom-color:var(--ab);}
       </div>
     </div>
 
-    <!-- LIBRARY -->
     <div id="tab-library" class="tab-page">
       <div class="pg-hdr">
         <div><div class="pg-title">My Library <span class="lc" id="lib-count">0</span></div><div class="pg-sub">Albums and releases you've saved</div></div>
@@ -378,7 +373,6 @@ nav a.active{border-bottom-color:var(--ab);}
   </main>
 </div>
 
-<!-- SETTINGS -->
 <div class="overlay" id="ov-settings" onclick="bgClose(event,'ov-settings')">
   <div class="modal">
     <button class="m-close" onclick="closeOv('ov-settings')">✕</button>
@@ -418,7 +412,6 @@ nav a.active{border-bottom-color:var(--ab);}
   </div>
 </div>
 
-<!-- ARTIST SEARCH -->
 <div class="overlay" id="ov-artists" onclick="bgClose(event,'ov-artists')">
   <div class="modal">
     <button class="m-close" onclick="closeOv('ov-artists')">✕</button>
@@ -729,8 +722,7 @@ function updateCounts(){
     dd.options[1].text=`Official Charts UK${ocN?` (${ocN})`:''}`;
     dd.options[2].text=`Deezer${dzN?` (${dzN})`:''}`;
     dd.options[3].text=`Apple Music${amN?` (${amN})`:''}`;
-
-    dd.options[5].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
+    dd.options[4].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
   }
 }
 
@@ -864,7 +856,7 @@ function renderArtists(){
 }
 function removeArtist(name){myArtists=myArtists.filter(a=>a.name!==name);localStorage.setItem('wl_artists',JSON.stringify(myArtists));renderArtists();}
 
-// ─── ARTIST SEARCH (MusicBrainz) ─────────────────────────────────────────────
+// ─── ARTIST SEARCH ─────────────────────────────────────────────
 let aTimer=null;
 function debouncedArtistSearch(q){
   clearTimeout(aTimer);
@@ -920,9 +912,7 @@ function followArtist(a){
 }
 
 // ─── FOR YOU ─────────────────────────────────────────────────────────────────
-// ─── FOR YOU — MusicBrainz powered ───────────────────────────────────────────
 // Cache MB release lookups in localStorage — invalidated after 6 hours.
-// Wrapped in try/catch so corrupted localStorage data never crashes the app.
 let mbReleasesCache = (()=>{ try{ return JSON.parse(localStorage.getItem('wl_mb_cache')||'{}'); }catch{ return {}; } })();
 const MB_CACHE_TTL  = 6 * 3600 * 1000;
 
@@ -959,8 +949,6 @@ async function buildRecs(){
     candidates.push({...rel, because});
   };
 
-  // Step 1: Fetch new releases for each followed artist by MBID
-  // Use cache to avoid hammering MB on every load
   const artistProgress = document.createElement('div');
   artistProgress.className = 'lr';
   el.innerHTML = '';
@@ -977,7 +965,6 @@ async function buildRecs(){
     for(const rel of rels) addCandidate(rel, artist.name);
   }
 
-  // Step 2: Also check name-match against already-loaded releases (covers non-MB artists)
   const allFollowed = myArtists.map(a=>norm(a.name));
   for(const rel of releases){
     if(allFollowed.includes(norm(rel.artist))){
@@ -986,17 +973,14 @@ async function buildRecs(){
     }
   }
 
-  // Step 3: Fetch similar/related artists via MB relations, find their releases
   if(mbArtists.length){
     artistProgress.innerHTML = `<div class="spin"></div>Finding related artists via MusicBrainz…`;
     for(const artist of mbArtists.slice(0,4)){
       const similar = await mbSimilarArtists(artist.mbid);
       for(const sim of similar){
-        // Check already-loaded releases first (instant, no API call)
         const nameMatches = releases.filter(r=>norm(r.artist)===norm(sim.name));
         for(const rel of nameMatches) addCandidate(rel, artist.name);
 
-        // Also fetch directly from MB if they have an MBID and we have slots
         if(sim.mbid && candidates.length < 30){
           let simRels = mbCacheGet(sim.mbid);
           if(!simRels){
@@ -1018,7 +1002,6 @@ async function buildRecs(){
     return;
   }
 
-  // Step 4: Ask Claude to pick and write editorial blurbs
   artistProgress.innerHTML = `<div class="spin"></div>Asking Claude for editorial picks…`;
 
   const artistList = myArtists.map(a=>a.name).join(', ');
@@ -1120,6 +1103,59 @@ function toast(msg){
   document.getElementById('toast-msg').textContent=msg;
   t.classList.add('show');clearTimeout(t._t);
   t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ─── MUSICBRAINZ API ─────────────────────────────────────────────────────────
+let mbQueue = Promise.resolve();
+function mbFetch(url) {
+  return new Promise(resolve => {
+    mbQueue = mbQueue.then(() => new Promise(r => setTimeout(r, 1100))).then(async () => {
+      try {
+        const res = await fetch(url, { headers: { 'Accept': 'application/json', 'User-Agent': 'Wavelength/1.0' } });
+        resolve(await res.json());
+      } catch { resolve(null); }
+    });
+  });
+}
+
+async function mbSearchArtist(query) {
+  const data = await mbFetch(`https://musicbrainz.org/ws/2/artist?query=artist:"${encodeURIComponent(query)}"&fmt=json`);
+  if (!data || !data.artists) return [];
+  return data.artists.map(a => ({
+    name: a.name, mbid: a.id, type: a.type, area: a.area?.name, disambiguation: a.disambiguation, tags: (a.tags || []).map(t => t.name)
+  }));
+}
+
+async function mbArtistReleases(mbid, limit=50) {
+  const data = await mbFetch(`https://musicbrainz.org/ws/2/release-group?artist=${mbid}&fmt=json&limit=${limit}`);
+  if (!data || !data['release-groups']) return [];
+  const out = [];
+  for (const rg of data['release-groups']) {
+    const dateRaw = rg['first-release-date'] || '';
+    out.push({
+      id: 'mb-' + rg.id,
+      title: rg.title,
+      artist: '', 
+      type: rg['primary-type'] === 'Album' ? 'Album' : (rg['primary-type'] === 'EP' ? 'EP' : 'Single'),
+      date: relDate(dateRaw),
+      dateRaw: dateRaw,
+      genre: null,
+      score: null,
+      source: 'mb',
+      img: `https://coverartarchive.org/release-group/${rg.id}/front-250`,
+      url: `https://musicbrainz.org/release-group/${rg.id}`,
+      isNew: dateRaw ? (Date.now() - new Date(dateRaw + 'T00:00:00').getTime()) < 28 * 86400000 : false
+    });
+  }
+  return out;
+}
+
+async function mbSimilarArtists(mbid) {
+  const data = await mbFetch(`https://musicbrainz.org/ws/2/artist/${mbid}?inc=artist-rels&fmt=json`);
+  if (!data || !data.relations) return [];
+  return data.relations
+    .filter(r => r['target-type'] === 'artist')
+    .map(r => ({ name: r.artist.name, mbid: r.artist.id }));
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
