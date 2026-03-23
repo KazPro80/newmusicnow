@@ -131,7 +131,7 @@ nav a.active{border-bottom-color:var(--ab);}
 .sb-aoty{background:rgba(46,158,126,0.15);color:var(--teal);border:1px solid rgba(46,158,126,0.2);}
 .sb-mc{background:rgba(255,210,30,0.12);color:#c8a820;border:1px solid rgba(255,210,30,0.2);}
 .sb-alm{background:rgba(160,100,220,0.15);color:#c080ff;border:1px solid rgba(160,100,220,0.2);}
-.sb-oc{background:rgba(0,90,200,0.18);color:#5ba3ff;border:1px solid rgba(0,90,200,0.3);}
+.sb-pf{background:rgba(255,53,48,0.15);color:#ff3530;border:1px solid rgba(255,53,48,0.2);}
 .new-chip{position:absolute;top:8px;right:8px;background:var(--ab);color:#000;font-family:'DM Mono',monospace;font-size:8px;font-weight:500;padding:2px 5px;border-radius:3px;z-index:3;letter-spacing:0.04em;}
 .score-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;position:absolute;bottom:8px;right:8px;z-index:3;}
 .sg{background:#1a4a2e;color:#4caf7d;border:1px solid #2a6a3e;}
@@ -253,7 +253,7 @@ nav a.active{border-bottom-color:var(--ab);}
       <div class="pill on"  id="pill-dz"><span class="dot"></span>Deezer</div>
       <div class="pill"     id="pill-wk"><span class="dot"></span>Apple+More</div>
       <div class="pill on"  id="pill-mb"><span class="dot"></span>MusicBrainz</div>
-      <div class="pill"     id="pill-oc"><span class="dot"></span>Official Charts</div>
+      <div class="pill"     id="pill-pf"><span class="dot"></span>Pitchfork</div>
     </div>
     <button class="btn" onclick="openSettings()">⚙ Keys</button>
     <button class="btn btn-g" onclick="openArtistModal()">⊕ Add Artists</button>
@@ -292,13 +292,13 @@ nav a.active{border-bottom-color:var(--ab);}
       <div style="padding:0 0.5rem">
         <select id="src-select" class="fi" style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 10px;cursor:pointer;width:100%" onchange="setSrcDd(this.value)">
           <option value="all">All sources (<span id="cnt-all">—</span>)</option>
-          <option value="oc">Official Charts UK</option>
+          <option value="pf">Pitchfork</option>
           <option value="dz">Deezer</option>
           <option value="am">Apple Music</option>
           <option value="aoty">Album of the Year</option>
         </select>
       </div>
-      <span id="cnt-oc" style="display:none">—</span>
+      <span id="cnt-pf" style="display:none">—</span>
       <span id="cnt-dz" style="display:none">—</span>
       <span id="cnt-am" style="display:none">—</span>
       <span id="cnt-aoty" style="display:none">—</span>
@@ -439,7 +439,7 @@ let myArtists = safeJSON('wl_artists', []);
 let library   = safeJSON('wl_library',  []);
 let activeTab = 'browse';
 let typeF = 'all', srcF = 'all', genreF = 'all', searchQ = '';
-let dateFrom = '', dateTo = '';  // ISO strings e.g. '2026-03-14', empty = no filter
+let dateFrom = '', dateTo = '';  
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 const PAL=[['#1a3a2a','#2e6e4a'],['#2a1a3a','#6e2e8e'],['#3a2a1a','#8e6e2e'],['#1a2a3a','#2e4e8e'],['#3a1a1a','#8e2e2e'],['#1a3a3a','#2e7e7e'],['#2a3a1a','#5e8e2e'],['#3a1a2a','#8e2e5e'],['#1a1a3a','#3e3e8e'],['#3a2a2a','#7e5e2e'],['#2a2a3a','#5e5e8e'],['#1a3a1a','#3e8e3e']];
@@ -458,57 +458,11 @@ function relDate(iso){
   return`${M[d.getMonth()]} ${d.getDate()}`;
 }
 
-// ─── DEEZER ──────────────────────────────────────────────────────────────────
-// Try direct first (works when hosted). If blocked (local file), fall through
-// to worker. Worker always fetches server-side so it always succeeds.
-async function fetchDeezerDirect(){
-  const[editRes,chartRes,trackRes]=await Promise.allSettled([
-    fetch('https://api.deezer.com/editorial/0/releases?limit=100').then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
-    fetch('https://api.deezer.com/chart/0/albums?limit=100').then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
-    fetch('https://api.deezer.com/chart/0/tracks?limit=100').then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
-  ]);
-  const seen=new Set(), out=[];
-  const addAlbum=(item,type='Album')=>{
-    if(!item?.id||seen.has('dz-'+item.id))return;
-    seen.add('dz-'+item.id);
-    const rd=item.release_date||'';
-    const isNew=rd?(Date.now()-new Date(rd+'T00:00:00').getTime())<4*864e5:false;
-    out.push({id:'dz-'+item.id,title:item.title||'Unknown',artist:item.artist?.name||'Unknown',type,date:rd,dateRaw:rd,genre:item.genres?.data?.[0]?.name||null,source:'dz',img:item.cover_xl||item.cover_big||null,url:item.link||null,isNew});
-  };
-  if(editRes.status==='fulfilled')for(const a of editRes.value?.data||[])addAlbum(a);
-  if(chartRes.status==='fulfilled')for(const a of chartRes.value?.data||[])addAlbum(a);
-  if(trackRes.status==='fulfilled')for(const t of trackRes.value?.data||[]){
-    const alb=t.album;
-    if(alb&&!seen.has('dz-t-'+alb.id)){seen.add('dz-t-'+alb.id);out.push({id:'dz-t-'+alb.id,title:alb.title||t.title||'Unknown',artist:t.artist?.name||'Unknown',type:'Single',date:'',dateRaw:'',genre:null,source:'dz',img:alb.cover_xl||alb.cover_big||null,url:alb.tracklist||null,isNew:false});}
-  }
-  if(!out.length)throw new Error('No results');
-  return out;
-}
-
-async function fetchDeezer(){
-  try{return await fetchDeezerDirect();}
-  catch{
-    // Blocked by CORS on local file — fall back to worker
-    if(workerUrl)return await workerFetch('deezer');
-    return[];
-  }
-}
-
-// ─── ARTIST SEARCH (Deezer) ───────────────────────────────────────────────────
-async function dzSearchArtist(term){
-  try{
-    const r=await fetch(`https://api.deezer.com/search/artist?q=${encodeURIComponent(term)}&limit=8`);
-    if(!r.ok)return[];
-    return(await r.json()).data||[];
-  }catch{return[];}
-}
-
-// ─── PILLS ───────────────────────────────────────────────────────────────────
 function updatePills(){
   setPill('pill-dz',true);
   setPill('pill-wk',!!workerUrl);
   setPill('pill-mb',true);
-  setPill('pill-oc',!!workerUrl);
+  setPill('pill-pf',!!workerUrl);
 }
 function setPill(id,on){
   const el=document.getElementById(id);if(!el)return;
@@ -516,7 +470,6 @@ function setPill(id,on){
   el.querySelector('.dot').style.background=on?'var(--teal)':'var(--c3)';
 }
 
-// ─── SCORE BADGE ─────────────────────────────────────────────────────────────
 function scoreBadge(score){
   if(!score||score<1)return'';
   const cls=score>=80?'sg':score>=61?'sy':score>=40?'so':'sr';
@@ -531,7 +484,7 @@ const SRC_BADGES={
   aoty:'<span class="src-badge sb-aoty">AOTY</span>',
   mc:  '<span class="src-badge sb-mc">MC</span>',
   alm: '<span class="src-badge sb-alm">ALM</span>',
-  oc:  '<span class="src-badge sb-oc">OC</span>',
+  pf:  '<span class="src-badge sb-pf">PFORK</span>',
 };
 
 function card(rel){
@@ -568,26 +521,24 @@ function card(rel){
 
 function skels(n){return Array(n).fill(`<div class="skel"><div class="sk" style="width:100%;aspect-ratio:1"></div><div style="padding:12px 13px"><div class="sk" style="height:10px;width:75%;margin-bottom:8px"></div><div class="sk" style="height:10px;width:55%;margin-bottom:8px"></div><div class="sk" style="height:8px;width:40%"></div></div></div>`).join('');}
 
-// ─── BROWSE ───────────────────────────────────────────────────────────────────
-// ─── BROWSER-SIDE SESSION CACHE ───────────────────────────────────────────────
+// ─── BROWSER-SIDE CACHE ───────────────────────────────────────────────
 const SESSION_TTL = 30*60*1000;
 function sGet(k){try{const e=JSON.parse(sessionStorage.getItem(k));return(e&&Date.now()-e.ts<SESSION_TTL)?e.d:null;}catch{return null;}}
 function sSet(k,d){try{sessionStorage.setItem(k,JSON.stringify({d,ts:Date.now()}));}catch{}}
 
-function mergeAll(ocR,amR,dzR,aotyR,mcR,almR){
+function mergeAll(pfR,amR,dzR,aotyR,mcR,almR){
   const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const key=r=>norm(r.artist)+'|'+norm(r.title);
   const seen=new Set(),out=[];
-  for(const r of [...ocR,...amR,...dzR,...aotyR,...mcR,...almR]){
+  for(const r of [...pfR,...amR,...dzR,...aotyR,...mcR,...almR]){
     const k=key(r);
-    if(seen.has(k)){const ex=out.find(x=>key(x)===k);if(ex){if(!ex.img&&r.img)ex.img=r.img;if(!ex.score&&r.score)ex.score=r.score;}continue;}
+    if(seen.has(k)){const ex=out.find(x=>key(x)===k);if(ex){if(!ex.img&&r.img)ex.img=r.img;if(!ex.score&&r.score)ex.score=r.score;if(!ex.blurb&&r.blurb)ex.blurb=r.blurb;}continue;}
     seen.add(k);out.push(r);
   }
   return out.sort((a,b)=>{if(a.isNew&&!b.isNew)return -1;if(!a.isNew&&b.isNew)return 1;return(b.dateRaw||'').localeCompare(a.dateRaw||'');});
 }
 
 // ─── BROWSE ───────────────────────────────────────────────────────────────────
-
 async function workerFetch(endpoint) {
   if (!workerUrl) return [];
   try {
@@ -607,12 +558,10 @@ async function loadBrowse(force=false){
   setDateLabel();
   showStatus(`<div class="st"><div class="spin"></div>Loading from cache…</div>`);
 
-  // 🚨 Fetch everything from your fast Worker simultaneously.
-  // No more slow, direct scraping from the browser!
   try {
-    const [dzR, ocR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
+    const [dzR, pfR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
       workerFetch('deezer'),
-      workerFetch('officialcharts'),
+      workerFetch('pitchfork'), // Switched from officialcharts to pitchfork
       workerFetch('applemusic'),
       workerFetch('aoty'),
       workerFetch('metacritic'),
@@ -620,15 +569,18 @@ async function loadBrowse(force=false){
       workerFetch('bandcamp')
     ]);
 
-    releases = mergeAll(ocR,amR,dzR,aotyR,mcR,almR);
-    editorial = [...bcR,...almR];
+    releases = mergeAll(pfR,amR,dzR,aotyR,mcR,almR);
+    
+    // Mix Pitchfork reviews with blurbs into the editorial strip 
+    const pfEditorial = pfR.filter(r => r.blurb).map(r => ({...r, type:'Editorial'})).slice(0, 4);
+    editorial = [...pfEditorial,...bcR,...almR];
 
     updateCounts();
     buildGenreSidebar();
     renderBrowse();
     renderEditorial();
 
-    const total=ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
+    const total=pfR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
     let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
     if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
     st+=`</div>`;
@@ -662,7 +614,7 @@ function sortReleases(list){
   const c=[...list];
   if(mode==='alpha')return c.sort((a,b)=>a.title.localeCompare(b.title));
   if(mode==='artist')return c.sort((a,b)=>a.artist.localeCompare(b.artist));
-  return c; // already sorted newest-first
+  return c; 
 }
 
 function renderBrowse(){
@@ -685,7 +637,7 @@ function renderEditorial(){
   const strip=document.getElementById('ed-strip');
   if(!editorial||!editorial.length){sec.style.display='none';return;}
   sec.style.display='block';
-  const srcLabel={bc:'Bandcamp Daily',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
+  const srcLabel={bc:'Bandcamp Daily',pf:'Pitchfork',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
   strip.innerHTML=editorial.map(item=>{
     const[g1,g2]=palFor(item.id||item.title);
     return`<div class="ed-card">
@@ -707,9 +659,9 @@ function showStatus(html){document.getElementById('status-bar').innerHTML=html;}
 
 function updateCounts(){
   const cnt=s=>releases.filter(r=>r.source===s).length;
-  const ocN=cnt('oc'), dzN=cnt('dz'), amN=cnt('am'), aotyN=cnt('aoty');
+  const pfN=cnt('pf'), dzN=cnt('dz'), amN=cnt('am'), aotyN=cnt('aoty');
   document.getElementById('cnt-all').textContent=releases.length;
-  document.getElementById('cnt-oc').textContent=ocN;
+  document.getElementById('cnt-pf').textContent=pfN;
   document.getElementById('cnt-dz').textContent=dzN;
   document.getElementById('cnt-am').textContent=amN;
   document.getElementById('cnt-aoty').textContent=aotyN;
@@ -719,7 +671,7 @@ function updateCounts(){
   const dd=document.getElementById('src-select');
   if(dd){
     dd.options[0].text=`All sources (${releases.length})`;
-    dd.options[1].text=`Official Charts UK${ocN?` (${ocN})`:''}`;
+    dd.options[1].text=`Pitchfork${pfN?` (${pfN})`:''}`;
     dd.options[2].text=`Deezer${dzN?` (${dzN})`:''}`;
     dd.options[3].text=`Apple Music${amN?` (${amN})`:''}`;
     dd.options[4].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
@@ -727,7 +679,6 @@ function updateCounts(){
 }
 
 function buildGenreSidebar(){
-  // Count genres from the already source+type filtered list so numbers match what you see
   const base=releases.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
     if(srcF!=='all'&&r.source!==srcF)return false;
@@ -738,7 +689,6 @@ function buildGenreSidebar(){
   if(!base.length){document.getElementById('genre-sb').innerHTML=`<div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Genre data loads from Deezer and Apple Music.</div>`;return;}
   const map={};base.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
   const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
-  // Total filtered releases (regardless of whether they have genre data)
   const filteredTotal = releases.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
     if(srcF!=='all'&&r.source!==srcF)return false;
@@ -791,12 +741,10 @@ function setDatePreset(days, el){
 function setCustomDate(){
   dateFrom = document.getElementById('date-from').value;
   dateTo   = document.getElementById('date-to').value;
-  // Deselect preset pills since user is now using custom range
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
   if(activeTab==='browse')renderBrowse();
 }
 
-// Initialise date inputs to this week on load
 function initDatePicker(){
   const to   = new Date();
   const from = new Date(+to - 7*864e5);
@@ -898,7 +846,6 @@ function followArtist(a){
     myArtists.push(a);
     localStorage.setItem('wl_artists',JSON.stringify(myArtists));
     toast('Following '+a.name);
-    // Pre-fetch their releases into the cache in the background
     if(a.mbid)mbArtistReleases(a.mbid).then(rels=>{
       if(rels.length){
         mbReleasesCache[a.mbid]=rels;
@@ -912,7 +859,6 @@ function followArtist(a){
 }
 
 // ─── FOR YOU ─────────────────────────────────────────────────────────────────
-// Cache MB release lookups in localStorage — invalidated after 6 hours.
 let mbReleasesCache = (()=>{ try{ return JSON.parse(localStorage.getItem('wl_mb_cache')||'{}'); }catch{ return {}; } })();
 const MB_CACHE_TTL  = 6 * 3600 * 1000;
 
@@ -930,8 +876,6 @@ function mbCacheSet(mbid, releases){
 async function buildRecs(){
   if(!myArtists.length) return;
   const el = document.getElementById('recs-body');
-
-  // Only artists with MBIDs can use the full MB pipeline
   const mbArtists   = myArtists.filter(a => a.mbid);
   const noMbArtists = myArtists.filter(a => !a.mbid);
 
@@ -1159,8 +1103,7 @@ async function mbSimilarArtists(mbid) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-// Clear stale cache from older versions of the app
-const CACHE_VERSION = '6';
+const CACHE_VERSION = '7';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
