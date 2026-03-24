@@ -10,14 +10,11 @@
 <script>
 // ═══════════════════════════════════════════════════════════════
 //  CONFIGURATION
-//  Paste keys here once when deploying for others.
-//  Users of your hosted version never need to touch this.
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
   WORKER_URL:    'https://broken-river-2a46.kazpro527.workers.dev',
   STORE:        'us',
 };
-// ═══════════════════════════════════════════════════════════════
 </script>
 
 <style>
@@ -31,7 +28,7 @@ const CONFIG = {
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;font-size:14px;}
 header{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:0 2rem;display:flex;align-items:center;gap:2rem;height:58px;position:sticky;top:0;z-index:100;}
-.logo{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--ab);letter-spacing:-0.5px;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.logo{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--ab);letter-spacing:-0.5px;white-space:nowrap;display:flex;align-items:center;gap:8px;cursor:pointer;}
 .logo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--c3);font-weight:400;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--bdr);border-radius:3px;}
 nav{display:flex;flex:1;}
 nav a{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--c3);text-decoration:none;padding:0 1.2rem;height:58px;display:flex;align-items:center;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;cursor:pointer;white-space:nowrap;}
@@ -98,20 +95,28 @@ nav a.active{border-bottom-color:var(--ab);}
 
 /* cards */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;margin-bottom:2rem;}
-.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;transition:border-color 0.15s,transform 0.15s;cursor:pointer;position:relative;}
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;transition:border-color 0.15s,transform 0.15s;position:relative;}
 .card:hover{border-color:var(--bdr2);transform:translateY(-2px);}
 .card.inlib{border-color:var(--ad);}
 .ca{width:100%;aspect-ratio:1;position:relative;overflow:hidden;background:var(--bg3);}
 .ca-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 .ca img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .ci{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:rgba(255,255,255,0.18);user-select:none;letter-spacing:-2px;z-index:1;}
-.cov{position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;gap:8px;z-index:2;}
+.cov{position:absolute;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;z-index:2;}
 .card:hover .cov{opacity:1;}
 .abtn{width:36px;height:36px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:transform 0.1s;}
 .abtn:hover{transform:scale(1.1);}
 .pbtn{background:var(--ab);color:#000;}
-.lbtn{background:rgba(255,255,255,0.15);color:#fff;}
+.lbtn{background:rgba(255,255,255,0.15);color:#fff; position:absolute; top:12px; right:12px;}
 .lbtn.inlib{background:rgba(212,146,42,0.35);color:var(--ab);}
+
+/* Player Icons */
+.play-row {display:flex; gap:8px; position:absolute; bottom:16px; left:0; right:0; justify-content:center; transform:translateY(10px); transition:transform 0.2s;}
+.card:hover .play-row {transform:translateY(0);}
+.p-icon {width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s;}
+.p-icon:hover {background:var(--ab); color:#000; transform:scale(1.1);}
+.p-icon svg {width:16px; height:16px; fill:currentColor;}
+
 .ci-info{padding:12px 13px 13px;}
 .ci-title{font-family:'Fraunces',serif;font-weight:500;font-size:14px;color:var(--cream);margin-bottom:2px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ci-artist{font-size:12px;color:var(--c2);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -193,8 +198,6 @@ nav a.active{border-bottom-color:var(--ab);}
 .alib-btn{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid var(--bdr2);background:transparent;color:var(--c2);cursor:pointer;transition:all 0.15s;}
 .alib-btn:hover{background:var(--bg4);color:var(--cream);}
 .alib-btn.inlib{border-color:var(--ad);color:var(--amber);background:rgba(212,146,42,0.08);}
-.stream-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid var(--bdr);background:transparent;color:var(--c3);cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
-.stream-btn:hover{color:var(--cream);border-color:var(--bdr2);}
 
 /* modals */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -236,12 +239,15 @@ nav a.active{border-bottom-color:var(--ab);}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:10px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--c2);letter-spacing:0.06em;z-index:300;transform:translateY(60px);opacity:0;transition:all 0.25s;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast span{color:var(--ab);}
+
+.clear-btn {background:none; border:none; color:var(--amber); font-family:'DM Mono', monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; margin-left:12px; border-bottom:1px solid transparent; transition:border-color 0.15s;}
+.clear-btn:hover {border-color:var(--amber);}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">◉ Wavelength <span class="logo-sub">Live</span></div>
+  <div class="logo" onclick="resetFilters()">◉ Wavelength <span class="logo-sub">Live</span></div>
   <nav>
     <a class="active" onclick="gotoTab('browse',this)">Browse</a>
     <a onclick="gotoTab('foryou',this)">For You</a>
@@ -253,7 +259,7 @@ nav a.active{border-bottom-color:var(--ab);}
       <div class="pill on"  id="pill-dz"><span class="dot"></span>Deezer</div>
       <div class="pill"     id="pill-wk"><span class="dot"></span>Apple+More</div>
       <div class="pill on"  id="pill-mb"><span class="dot"></span>MusicBrainz</div>
-      <div class="pill"     id="pill-pf"><span class="dot"></span>Pitchfork</div>
+      <div class="pill"     id="pill-pf"><span class="dot"></span>Reddit</div>
     </div>
     <button class="btn" onclick="openSettings()">⚙ Keys</button>
     <button class="btn btn-g" onclick="openArtistModal()">⊕ Add Artists</button>
@@ -264,22 +270,22 @@ nav a.active{border-bottom-color:var(--ab);}
   <aside class="sidebar">
     <div>
       <div class="sb-lbl">Date Range</div>
-      <div style="padding:0 0.5rem;display:flex;flex-direction:column;gap:6px;">
+      <div style="padding:0 0.5rem;display:flex;flex-direction:column;gap:8px;">
         <div class="type-row" id="date-presets">
           <span class="tt on" data-days="7"  onclick="setDatePreset(7,this)">This week</span>
           <span class="tt"    data-days="14" onclick="setDatePreset(14,this)">2 weeks</span>
           <span class="tt"    data-days="30" onclick="setDatePreset(30,this)">Month</span>
           <span class="tt"    data-days="0"  onclick="setDatePreset(0,this)">All</span>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;flex:1;cursor:pointer" onchange="setCustomDate()">
+        <div style="display:flex;align-items:center;gap:6px; flex-wrap:wrap;">
+          <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;min-width:0;flex:1;cursor:pointer" onchange="setCustomDate()">
           <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--c3)">to</span>
-          <input type="date" id="date-to"   class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;flex:1;cursor:pointer" onchange="setCustomDate()">
+          <input type="date" id="date-to"   class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;min-width:0;flex:1;cursor:pointer" onchange="setCustomDate()">
         </div>
       </div>
 
-      <div class="sb-lbl" style="margin-top:0.5rem">Release Type</div>
-      <div class="type-row">
+      <div class="sb-lbl" style="margin-top:1.5rem">Release Type</div>
+      <div class="type-row" id="type-pills">
         <span class="tt on" onclick="setType('all',this)">All</span>
         <span class="tt" onclick="setType('Album',this)">Albums</span>
         <span class="tt" onclick="setType('Single',this)">Singles</span>
@@ -292,7 +298,7 @@ nav a.active{border-bottom-color:var(--ab);}
       <div style="padding:0 0.5rem">
         <select id="src-select" class="fi" style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 10px;cursor:pointer;width:100%" onchange="setSrcDd(this.value)">
           <option value="all">All sources (<span id="cnt-all">—</span>)</option>
-          <option value="pf">Pitchfork</option>
+          <option value="pf">Reddit & Indies</option>
           <option value="dz">Deezer</option>
           <option value="am">Apple Music</option>
           <option value="aoty">Album of the Year</option>
@@ -381,28 +387,20 @@ nav a.active{border-bottom-color:var(--ab);}
 
     <div class="fg">
       <div class="fl">
-        <span>Cloudflare Worker URL <span style="color:#c07af8;font-size:9px">— Apple Music · AOTY · Metacritic · Bandcamp · AllMusic</span></span>
+        <span>Cloudflare Worker URL</span>
         <a href="https://workers.cloudflare.com" target="_blank">Deploy free →</a>
       </div>
       <input class="fi" id="in-worker" type="text" placeholder="https://wavelength-proxy.yourname.workers.dev">
-      <div class="fh">Free · 5 min setup · Deploy wavelength-worker.js · Adds Apple Music + critic scores + editorial picks</div>
     </div>
     <div class="fg">
-      <div class="fl"><span>MusicBrainz <span style="color:var(--teal);font-size:9px">— artist search & For You recommendations</span></span></div>
+      <div class="fl"><span>MusicBrainz</span></div>
       <div class="fh" style="background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;color:var(--c2)">No key needed — MusicBrainz is a free open database. Artist search and the For You tab work automatically.</div>
     </div>
     <div class="fg">
-      <div class="fl"><span>Store Region <span style="color:var(--c3);font-size:9px">— Apple Music (via worker)</span></span></div>
+      <div class="fl"><span>Store Region</span></div>
       <select class="fi" id="in-store" style="font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">
         <option value="us">United States</option>
         <option value="gb">United Kingdom</option>
-        <option value="au">Australia</option>
-        <option value="ca">Canada</option>
-        <option value="de">Germany</option>
-        <option value="fr">France</option>
-        <option value="jp">Japan</option>
-        <option value="br">Brazil</option>
-        <option value="mx">Mexico</option>
       </select>
     </div>
     <div style="display:flex;gap:8px;margin-top:0.5rem">
@@ -446,7 +444,6 @@ const PAL=[['#1a3a2a','#2e6e4a'],['#2a1a3a','#6e2e8e'],['#3a2a1a','#8e6e2e'],['#
 function palFor(s){let h=0;for(const c of String(s))h=Math.imul(31,h)+c.charCodeAt(0)|0;return PAL[Math.abs(h)%PAL.length];}
 function inits(t){return(t||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function relDate(iso){
   if(!iso)return'';
   const d=new Date(iso+'T00:00:00'),now=new Date();
@@ -480,12 +477,14 @@ function scoreBadge(score){
 const SRC_BADGES={
   dz:  '<span class="src-badge sb-dz">DZ</span>',
   am:  '<span class="src-badge sb-am">AM</span>',
-  dc:  '<span class="src-badge sb-dc">VINYL</span>',
   aoty:'<span class="src-badge sb-aoty">AOTY</span>',
-  mc:  '<span class="src-badge sb-mc">MC</span>',
-  alm: '<span class="src-badge sb-alm">ALM</span>',
   pf:  '<span class="src-badge sb-pf">PFORK</span>',
 };
+
+// SVG Icons for Music Players
+const ICON_SPOTIFY = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.745 3.808-.87 7.076-.496 9.715 1.115.293.18.386.563.207.854zm1.214-2.71c-.226.366-.704.482-1.07.256-2.695-1.655-6.815-2.14-9.873-1.17-.413.13-8.58-.096-.988-.51-.13-.414.095-.857.51-.987 3.51-1.113 8.08-.57 11.176 1.334.367.226.483.704.257 1.07zm.106-2.836C14.73 9.014 8.544 8.785 4.98 9.87c-.496.15-1.01-.13-1.16-.626-.15-.495.13-1.01.626-1.16 4.14-1.265 10.97-1.01 14.765 1.242.443.264.587.842.324 1.285-.265.444-.843.588-1.286.325z"/>`;
+const ICON_APPLE   = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.36 13.91c-.48.24-.96.36-1.56.36-2.04 0-3.36-1.56-3.36-3.96v-3.72c0-.48.36-.84.84-.84h1.08c.48 0 .84.36.84.84v3.6c0 1.44.84 2.16 1.92 2.16.48 0 .84-.12 1.2-.24.36-.12.6-.6.48-1.08l-.24-1.08c-.12-.48-.6-.72-1.08-.48-.24.12-.48.24-.72.24-.36 0-.6-.24-.6-.6v-2.4c0-.48.36-.84.84-.84h1.08c.48 0 .84.36.84.84v3.6c0 .72-.48 1.44-1.56 1.92zM15 8.16c-.72 0-1.2-.48-1.2-1.2s.48-1.2 1.2-1.2 1.2.48 1.2 1.2-.48 1.2-1.2 1.2z"/>`;
+const ICON_YOUTUBE = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1.9 14.5v-9l7.7 4.5-7.7 4.5z"/>`;
 
 function card(rel){
   const inLib=library.some(x=>x.id===rel.id);
@@ -494,7 +493,13 @@ function card(rel){
   const srcBadge=SRC_BADGES[rel.source]||'';
   const newChip=rel.isNew?'<span class="new-chip">NEW</span>':'';
   const scoreEl=rel.score?scoreBadge(rel.score):'';
-  const playAction=rel.url?`window.open('${rel.url.replace(/'/g,"\\'")}','_blank')`:'';
+  
+  // Universal Search Links
+  const query = encodeURIComponent(rel.artist + ' ' + rel.title);
+  const spLink = `https://open.spotify.com/search/${query}/albums`;
+  const amLink = `https://music.apple.com/us/search?term=${query}`;
+  const ytLink = `https://music.youtube.com/search?q=${query}`;
+
   return`<div class="card${inLib?' inlib':''}" id="card-${rel.id}">
     ${srcBadge}${newChip}${scoreEl}
     <div class="ca">
@@ -503,8 +508,12 @@ function card(rel){
       </div>
       ${rel.img?`<img src="${esc(rel.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}
       <div class="cov">
-        <button class="abtn pbtn" onclick="event.stopPropagation();${playAction}" title="Open">▶</button>
-        <button class="abtn lbtn${inLib?' inlib':''}" id="ab-${rel.id}" onclick="event.stopPropagation();toggleLib(${JSON.stringify(rel.id)})" title="${inLib?'In library':'Add'}">${inLib?'✓':'+'}</button>
+        <button class="abtn lbtn${inLib?' inlib':''}" id="ab-${rel.id}" onclick="event.stopPropagation();toggleLib(${JSON.stringify(rel.id)})" title="${inLib?'In library':'Add to Library'}">${inLib?'✓':'+'}</button>
+        <div class="play-row">
+          <div class="p-icon" title="Listen on Spotify" onclick="event.stopPropagation();window.open('${spLink}','_blank')"><svg viewBox="0 0 24 24">${ICON_SPOTIFY}</svg></div>
+          <div class="p-icon" title="Listen on Apple Music" onclick="event.stopPropagation();window.open('${amLink}','_blank')"><svg viewBox="0 0 24 24">${ICON_APPLE}</svg></div>
+          <div class="p-icon" title="Listen on YouTube Music" onclick="event.stopPropagation();window.open('${ytLink}','_blank')"><svg viewBox="0 0 24 24">${ICON_YOUTUBE}</svg></div>
+        </div>
       </div>
     </div>
     <div class="ci-info">
@@ -522,10 +531,6 @@ function card(rel){
 function skels(n){return Array(n).fill(`<div class="skel"><div class="sk" style="width:100%;aspect-ratio:1"></div><div style="padding:12px 13px"><div class="sk" style="height:10px;width:75%;margin-bottom:8px"></div><div class="sk" style="height:10px;width:55%;margin-bottom:8px"></div><div class="sk" style="height:8px;width:40%"></div></div></div>`).join('');}
 
 // ─── BROWSER-SIDE CACHE ───────────────────────────────────────────────
-const SESSION_TTL = 30*60*1000;
-function sGet(k){try{const e=JSON.parse(sessionStorage.getItem(k));return(e&&Date.now()-e.ts<SESSION_TTL)?e.d:null;}catch{return null;}}
-function sSet(k,d){try{sessionStorage.setItem(k,JSON.stringify({d,ts:Date.now()}));}catch{}}
-
 function mergeAll(pfR,amR,dzR,aotyR,mcR,almR){
   const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const key=r=>norm(r.artist)+'|'+norm(r.title);
@@ -561,7 +566,7 @@ async function loadBrowse(force=false){
   try {
     const [dzR, pfR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
       workerFetch('deezer'),
-      workerFetch('pitchfork'), // Switched from officialcharts to pitchfork
+      workerFetch('pitchfork'), 
       workerFetch('applemusic'),
       workerFetch('aoty'),
       workerFetch('metacritic'),
@@ -571,7 +576,6 @@ async function loadBrowse(force=false){
 
     releases = mergeAll(pfR,amR,dzR,aotyR,mcR,almR);
     
-    // Mix Pitchfork reviews with blurbs into the editorial strip 
     const pfEditorial = pfR.filter(r => r.blurb).map(r => ({...r, type:'Editorial'})).slice(0, 4);
     editorial = [...pfEditorial,...bcR,...almR];
 
@@ -594,6 +598,18 @@ function setDateLabel(){
   const d=new Date();
   document.getElementById('date-lbl').textContent=
     d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+
+function resetFilters() {
+  typeF = 'all'; srcF = 'all'; genreF = 'all'; searchQ = '';
+  document.querySelectorAll('#type-pills .tt').forEach(t=>t.classList.remove('on'));
+  document.querySelector('#type-pills .tt').classList.add('on'); // Set 'All' back to active
+  document.getElementById('src-select').value = 'all';
+  document.getElementById('browse-q').value = '';
+  document.getElementById('s-clear').style.display = 'none';
+  initDatePicker(); 
+  buildGenreSidebar();
+  renderBrowse();
 }
 
 function applyFilters(list){
@@ -621,14 +637,23 @@ function renderBrowse(){
   const body=document.getElementById('browse-body');
   const sumEl=document.getElementById('rsum');
   const filtered=sortReleases(applyFilters(releases));
-  const hasF=searchQ||typeF!=='all'||srcF!=='all'||genreF!=='all';
+  
+  // Only show the Clear Filters button if user actually changed a filter
+  const hasF=searchQ||typeF!=='all'||srcF!=='all'||genreF!=='all'||dateFrom!==''||dateTo!=='';
+  
   if(!filtered.length){
     sumEl.style.display='none';
-    body.innerHTML=`<div class="empty"><div class="e-icon">◎</div><div class="e-title">Nothing matched</div><div class="e-sub">Try a different filter or search term.${searchQ?'<br><button class="btn" style="margin-top:8px" onclick="clearSearch()">Clear search</button>':''}</div></div>`;
+    body.innerHTML=`<div class="empty"><div class="e-icon">◎</div><div class="e-title">Nothing matched</div><div class="e-sub">Try a different filter or search term.<br><button class="btn" style="margin-top:8px" onclick="resetFilters()">Reset All Filters</button></div></div>`;
     return;
   }
-  if(hasF){sumEl.style.display='block';sumEl.innerHTML=`Showing <strong>${filtered.length}</strong> of ${releases.length} releases${searchQ?` · "<strong>${esc(searchQ)}</strong>"`:''}`;}
-  else sumEl.style.display='none';
+  
+  if(hasF){
+    sumEl.style.display='block';
+    sumEl.innerHTML=`Showing <strong>${filtered.length}</strong> of ${releases.length} releases${searchQ?` · "<strong>${esc(searchQ)}</strong>"`:''} <button class="clear-btn" onclick="resetFilters()">✕ Clear Filters</button>`;
+  } else {
+    sumEl.style.display='none';
+  }
+  
   body.innerHTML=`<div class="grid">${filtered.map(card).join('')}</div>`;
 }
 
@@ -637,7 +662,7 @@ function renderEditorial(){
   const strip=document.getElementById('ed-strip');
   if(!editorial||!editorial.length){sec.style.display='none';return;}
   sec.style.display='block';
-  const srcLabel={bc:'Bandcamp Daily',pf:'Pitchfork',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
+  const srcLabel={bc:'Bandcamp Daily',pf:'Reddit',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
   strip.innerHTML=editorial.map(item=>{
     const[g1,g2]=palFor(item.id||item.title);
     return`<div class="ed-card">
@@ -665,13 +690,11 @@ function updateCounts(){
   document.getElementById('cnt-dz').textContent=dzN;
   document.getElementById('cnt-am').textContent=amN;
   document.getElementById('cnt-aoty').textContent=aotyN;
-  document.getElementById('cnt-mc').textContent=cnt('mc');
-  document.getElementById('cnt-alm').textContent=cnt('alm');
-  // Update dropdown option labels
+  
   const dd=document.getElementById('src-select');
   if(dd){
     dd.options[0].text=`All sources (${releases.length})`;
-    dd.options[1].text=`Pitchfork${pfN?` (${pfN})`:''}`;
+    dd.options[1].text=`Reddit & Indies${pfN?` (${pfN})`:''}`;
     dd.options[2].text=`Deezer${dzN?` (${dzN})`:''}`;
     dd.options[3].text=`Apple Music${amN?` (${amN})`:''}`;
     dd.options[4].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
@@ -679,25 +702,29 @@ function updateCounts(){
 }
 
 function buildGenreSidebar(){
+  // The base array ignores the current Genre filter so siblings don't disappear
   const base=releases.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
     if(srcF!=='all'&&r.source!==srcF)return false;
     if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
     if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
-    return r.genre;
-  });
-  if(!base.length){document.getElementById('genre-sb').innerHTML=`<div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Genre data loads from Deezer and Apple Music.</div>`;return;}
-  const map={};base.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
-  const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
-  const filteredTotal = releases.filter(r=>{
-    if(typeF!=='all'&&r.type!==typeF)return false;
-    if(srcF!=='all'&&r.source!==srcF)return false;
-    if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
-    if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
     return true;
-  }).length;
-  let h=`<div class="fp on" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${filteredTotal}</span></div>`;
-  h+=genres.map(([g,c])=>`<div class="fp" data-genre="${esc(g)}"><span class="fp-n">${esc(g)}</span><span class="fp-c">${c}</span></div>`).join('');
+  });
+
+  const filteredTotal = base.length;
+  // Always render the 'All genres' reset button so the user is never trapped
+  let h=`<div class="fp ${genreF==='all'?'on':''}" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${filteredTotal}</span></div>`;
+
+  const withGenre = base.filter(r => r.genre);
+  if(!withGenre.length){
+    h += `<div style="font-size:11px;color:var(--c3);padding:0.5rem;line-height:1.6">No genre tags available for this specific filter.</div>`;
+  } else {
+    const map={}; 
+    withGenre.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
+    const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
+    h+=genres.map(([g,c])=>`<div class="fp ${genreF===g?'on':''}" data-genre="${esc(g)}"><span class="fp-n">${esc(g)}</span><span class="fp-c">${c}</span></div>`).join('');
+  }
+
   document.getElementById('genre-sb').innerHTML=h;
   document.querySelectorAll('#genre-sb .fp').forEach(el=>{
     el.addEventListener('click',()=>{
@@ -712,13 +739,8 @@ function buildGenreSidebar(){
 // ─── SEARCH & FILTERS ────────────────────────────────────────────────────────
 function onSearch(v){searchQ=v;document.getElementById('s-clear').style.display=v?'block':'none';if(activeTab==='browse')renderBrowse();}
 function clearSearch(){searchQ='';document.getElementById('browse-q').value='';document.getElementById('s-clear').style.display='none';if(activeTab==='browse')renderBrowse();}
-function setType(v,el){typeF=v;document.querySelectorAll('.tt').forEach(t=>t.classList.remove('on'));el.classList.add('on');buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
-function setSrcDd(v){
-  srcF=v;
-  buildGenreSidebar();
-  if(activeTab==='browse')renderBrowse();
-}
-function setSrc(v,el){srcF=v;const dd=document.getElementById('src-select');if(dd)dd.value=v;buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
+function setType(v,el){typeF=v;document.querySelectorAll('#type-pills .tt').forEach(t=>t.classList.remove('on'));el.classList.add('on');buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
+function setSrcDd(v){srcF=v;buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
 
 function setDatePreset(days, el){
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
@@ -735,6 +757,7 @@ function setDatePreset(days, el){
     document.getElementById('date-from').value = dateFrom;
     document.getElementById('date-to').value   = dateTo;
   }
+  buildGenreSidebar();
   if(activeTab==='browse')renderBrowse();
 }
 
@@ -742,16 +765,17 @@ function setCustomDate(){
   dateFrom = document.getElementById('date-from').value;
   dateTo   = document.getElementById('date-to').value;
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
+  buildGenreSidebar();
   if(activeTab==='browse')renderBrowse();
 }
 
 function initDatePicker(){
-  const to   = new Date();
-  const from = new Date(+to - 7*864e5);
-  dateTo   = to.toISOString().slice(0,10);
-  dateFrom = from.toISOString().slice(0,10);
-  document.getElementById('date-from').value = dateFrom;
-  document.getElementById('date-to').value   = dateTo;
+  // Only set visually on load, wait for user to click to actually filter
+  document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
+  document.querySelector('#date-presets .tt[data-days="0"]').classList.add('on');
+  dateFrom=''; dateTo='';
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
 }
 
 // ─── LIBRARY ─────────────────────────────────────────────────────────────────
@@ -941,7 +965,7 @@ async function buildRecs(){
     el.innerHTML = `<div class="empty">
       <div class="e-icon">◎</div>
       <div class="e-title">No new releases found</div>
-      <div class="e-sub">None of your followed artists or their related artists have released anything in the past 4 weeks according to MusicBrainz. MusicBrainz can lag a few days for very new releases — check back soon.</div>
+      <div class="e-sub">None of your followed artists or their related artists have released anything in the past 4 weeks according to MusicBrainz.</div>
     </div>`;
     return;
   }
@@ -960,11 +984,8 @@ async function buildRecs(){
         messages:[{role:'user',content:
           `You are the editorial recommendation engine for Wavelength, a music discovery app.\n\n` +
           `User follows: ${artistList}\n\n` +
-          `Candidate releases (fetched from MusicBrainz, filtered by artist relations):\n${relList}\n\n` +
-          `Pick the 5 best recommendations. For each write:\n` +
-          `- "because": short phrase like "Because you follow [artist name]"\n` +
-          `- "blurb": one sharp editorial sentence — specific, evocative, written like a music critic. No clichés, no generic praise.\n\n` +
-          `Respond ONLY with valid JSON:\n[{"title":"...","artist":"...","because":"...","blurb":"..."}]`
+          `Candidate releases:\n${relList}\n\n` +
+          `Pick the 5 best recommendations. Respond ONLY with valid JSON:\n[{"title":"...","artist":"...","because":"...","blurb":"..."}]`
         }]
       })
     });
@@ -1010,14 +1031,11 @@ function toggleLibRec(id,btn){toggleLib(id);const inLib=library.some(x=>x.id===i
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
 function openSettings(){
   document.getElementById('in-worker').value=workerUrl;
-  document.getElementById('in-store').value=store;
   document.getElementById('ov-settings').classList.add('open');
 }
 function saveSettings(){
   workerUrl=document.getElementById('in-worker').value.trim().replace(/\/+$/,'');
-  store=document.getElementById('in-store').value;
   localStorage.setItem('wl_worker',workerUrl);
-  localStorage.setItem('wl_store',store);
   updatePills();closeOv('ov-settings');toast('Settings saved');
   loadBrowse(true);
 }
@@ -1077,17 +1095,10 @@ async function mbArtistReleases(mbid, limit=50) {
   for (const rg of data['release-groups']) {
     const dateRaw = rg['first-release-date'] || '';
     out.push({
-      id: 'mb-' + rg.id,
-      title: rg.title,
-      artist: '', 
+      id: 'mb-' + rg.id, title: rg.title, artist: '', 
       type: rg['primary-type'] === 'Album' ? 'Album' : (rg['primary-type'] === 'EP' ? 'EP' : 'Single'),
-      date: relDate(dateRaw),
-      dateRaw: dateRaw,
-      genre: null,
-      score: null,
-      source: 'mb',
-      img: `https://coverartarchive.org/release-group/${rg.id}/front-250`,
-      url: `https://musicbrainz.org/release-group/${rg.id}`,
+      date: relDate(dateRaw), dateRaw: dateRaw, genre: null, score: null, source: 'mb',
+      img: `https://coverartarchive.org/release-group/${rg.id}/front-250`, url: `https://musicbrainz.org/release-group/${rg.id}`,
       isNew: dateRaw ? (Date.now() - new Date(dateRaw + 'T00:00:00').getTime()) < 28 * 86400000 : false
     });
   }
@@ -1097,13 +1108,11 @@ async function mbArtistReleases(mbid, limit=50) {
 async function mbSimilarArtists(mbid) {
   const data = await mbFetch(`https://musicbrainz.org/ws/2/artist/${mbid}?inc=artist-rels&fmt=json`);
   if (!data || !data.relations) return [];
-  return data.relations
-    .filter(r => r['target-type'] === 'artist')
-    .map(r => ({ name: r.artist.name, mbid: r.artist.id }));
+  return data.relations.filter(r => r['target-type'] === 'artist').map(r => ({ name: r.artist.name, mbid: r.artist.id }));
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = '7';
+const CACHE_VERSION = '8';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
