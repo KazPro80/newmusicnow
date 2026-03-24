@@ -905,18 +905,26 @@ function mbCacheSet(mbid, releases){
 async function buildRecs(){
   if(!myArtists.length) return;
   const el = document.getElementById('recs-body');
-  const mbArtists   = myArtists.filter(a => a.mbid);
-  const noMbArtists = myArtists.filter(a => !a.mbid);
+  const mbArtists = myArtists.filter(a => a.mbid);
 
-  if(!mbArtists.length && !noMbArtists.length) return;
+  if(!mbArtists.length) {
+    el.innerHTML = `<div class="empty"><div class="e-icon">◎</div><div class="e-title">No MusicBrainz Data</div><div class="e-sub">We need at least one artist with a MusicBrainz ID to find recommendations.</div></div>`;
+    return;
+  }
 
-  el.innerHTML = `<div class="lr"><div class="spin"></div>Looking up releases via MusicBrainz…</div>`;
+  el.innerHTML = `<div class="lr"><div class="spin"></div>Building your custom discovery feed…</div>`;
 
   const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const candidates = [];
   const addedIds = new Set();
+  
+  // Create a list of artists you already follow so we can BAN them from the recommendations!
+  const allFollowed = myArtists.map(a=>norm(a.name));
 
   const addCandidate = (rel, because) => {
+    // If the album is by an artist you already follow, ignore it!
+    if(allFollowed.includes(norm(rel.artist))) return;
+    
     if(addedIds.has(rel.id)) return;
     addedIds.add(rel.id);
     candidates.push({...rel, because});
@@ -927,40 +935,33 @@ async function buildRecs(){
   el.innerHTML = '';
   el.appendChild(artistProgress);
 
-  for(const artist of mbArtists){
-    artistProgress.innerHTML = `<div class="spin"></div>Checking releases for ${esc(artist.name)}…`;
+  // Shuffle your followed artists so we check different ones each time you refresh
+  const shuffledBaseArtists = [...mbArtists].sort(() => 0.5 - Math.random()).slice(0, 4);
 
-    let rels = mbCacheGet(artist.mbid);
-    if(!rels){
-      rels = await mbArtistReleases(artist.mbid, 4);
-      mbCacheSet(artist.mbid, rels);
-    }
-    for(const rel of rels) addCandidate(rel, artist.name);
-  }
+  artistProgress.innerHTML = `<div class="spin"></div>Finding related artists in MusicBrainz…`;
 
-  const allFollowed = myArtists.map(a=>norm(a.name));
-  for(const rel of releases){
-    if(allFollowed.includes(norm(rel.artist))){
-      const artist = myArtists.find(a=>norm(a.name)===norm(rel.artist));
-      addCandidate(rel, artist?.name||rel.artist);
-    }
-  }
+  for(const artist of shuffledBaseArtists){
+    const similar = await mbSimilarArtists(artist.mbid);
+    
+    // Shuffle the related artists so you don't get the same 3 recommendations forever
+    const shuffledSimilar = similar.sort(() => 0.5 - Math.random()).slice(0, 4);
 
-  if(mbArtists.length){
-    artistProgress.innerHTML = `<div class="spin"></div>Finding related artists via MusicBrainz…`;
-    for(const artist of mbArtists.slice(0,4)){
-      const similar = await mbSimilarArtists(artist.mbid);
-      for(const sim of similar){
-        const nameMatches = releases.filter(r=>norm(r.artist)===norm(sim.name));
-        for(const rel of nameMatches) addCandidate(rel, artist.name);
+    for(const sim of shuffledSimilar){
+      // 1. Check if we already have this related artist's new album in our massive Worker cache
+      const nameMatches = releases.filter(r=>norm(r.artist)===norm(sim.name));
+      for(const rel of nameMatches) {
+        addCandidate(rel, `Because you follow ${artist.name}`);
+      }
 
-        if(sim.mbid && candidates.length < 30){
-          let simRels = mbCacheGet(sim.mbid);
-          if(!simRels){
-            simRels = await mbArtistReleases(sim.mbid, 3);
-            mbCacheSet(sim.mbid, simRels);
-          }
-          for(const rel of simRels) addCandidate(rel, artist.name);
+      // 2. Also ask MusicBrainz directly if this related artist dropped an indie EP recently
+      if(sim.mbid && candidates.length < 40){
+        let simRels = mbCacheGet(sim.mbid);
+        if(!simRels){
+          simRels = await mbArtistReleases(sim.mbid, 3); // Only grab their 3 most recent
+          mbCacheSet(sim.mbid, simRels);
+        }
+        for(const rel of simRels) {
+          addCandidate(rel, `Because you follow ${artist.name}`);
         }
       }
     }
@@ -970,40 +971,20 @@ async function buildRecs(){
     el.innerHTML = `<div class="empty">
       <div class="e-icon">◎</div>
       <div class="e-title">No new releases found</div>
-      <div class="e-sub">None of your followed artists or their related artists have released anything in the past 4 weeks according to MusicBrainz.</div>
+      <div class="e-sub">None of the artists related to your favorites have released anything in the past 4 weeks. Try following a few more bands!</div>
     </div>`;
     return;
   }
 
-  artistProgress.innerHTML = `<div class="spin"></div>Asking Claude for editorial picks…`;
+  // Shuffle the final list of discovered albums and show the best 8
+  const finalPicks = candidates.sort(() => 0.5 - Math.random()).slice(0, 8);
+  
+  // Add a generic blurb since we removed Claude AI
+  finalPicks.forEach(p => {
+    p.blurb = `Recommended based on your library's acoustic fingerprint and MusicBrainz relational data.`;
+  });
 
-  const artistList = myArtists.map(a=>a.name).join(', ');
-  const relList = candidates.slice(0,20).map(r=>`"${r.title}" by ${r.artist} (${r.type}${r.genre?', '+r.genre:''}) [because: ${r.because}]`).join('\n');
-
-  try{
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:1200,
-        messages:[{role:'user',content:
-          `You are the editorial recommendation engine for Wavelength, a music discovery app.\n\n` +
-          `User follows: ${artistList}\n\n` +
-          `Candidate releases:\n${relList}\n\n` +
-          `Pick the 5 best recommendations. Respond ONLY with valid JSON:\n[{"title":"...","artist":"...","because":"...","blurb":"..."}]`
-        }]
-      })
-    });
-    const data  = await res.json();
-    const picks = JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
-    const enriched = picks.map(p=>{
-      const m = candidates.find(c=>norm(c.title)===norm(p.title)&&norm(c.artist)===norm(p.artist));
-      return m ? {...m,...p} : null;
-    }).filter(Boolean);
-    renderRecs(enriched.length ? enriched : candidates.slice(0,5));
-  }catch{
-    renderRecs(candidates.slice(0,5));
-  }
+  renderRecs(finalPicks);
 }
 
 function renderRecs(recs){
