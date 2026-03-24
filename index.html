@@ -196,6 +196,8 @@ nav a.active{border-bottom-color:var(--ab);}
 .alib-btn{font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid var(--bdr2);background:transparent;color:var(--c2);cursor:pointer;transition:all 0.15s;}
 .alib-btn:hover{background:var(--bg4);color:var(--cream);}
 .alib-btn.inlib{border-color:var(--ad);color:var(--amber);background:rgba(212,146,42,0.08);}
+.stream-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:6px 14px;border-radius:4px;border:1px solid var(--bdr);background:transparent;color:var(--c3);cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.stream-btn:hover{color:var(--cream);border-color:var(--bdr2);}
 
 /* modals */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -606,7 +608,7 @@ function setDateLabel(){
 function resetFilters() {
   typeF = 'all'; srcF = 'all'; genreF = 'all'; searchQ = '';
   document.querySelectorAll('#type-pills .tt').forEach(t=>t.classList.remove('on'));
-  document.querySelector('#type-pills .tt').classList.add('on'); // Set 'All' back to active
+  document.querySelector('#type-pills .tt').classList.add('on'); 
   document.getElementById('src-select').value = 'all';
   document.getElementById('browse-q').value = '';
   document.getElementById('s-clear').style.display = 'none';
@@ -814,7 +816,7 @@ function renderArtists(){
     const artRels=releases.filter(r=>norm(r.artist)===norm(a.name));
     h+=`<div class="artist-card${artRels.length?' hasnew':''}">
       ${artRels.length?`<div class="nb">${artRels.length} new</div>`:''}
-      <button class="rm-btn" data-name="${esc(JSON.stringify(a.name))}" onclick="removeArtistEl(this)">✕</button>
+      <button class="rm-btn" data-name="${esc(a.name)}" onclick="removeArtist(this.dataset.name)">✕</button>
       <div class="av" style="background:linear-gradient(135deg,${g1},${g2})">${a.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
       <div class="an">${esc(a.name)}</div>
       ${a.genre?`<div class="am">${esc(a.genre)}</div>`:''}
@@ -831,6 +833,8 @@ function removeArtist(name){myArtists=myArtists.filter(a=>a.name!==name);localSt
 
 // ─── ARTIST SEARCH ─────────────────────────────────────────────
 let aTimer=null;
+let currentSearchResults=[]; 
+
 function debouncedArtistSearch(q){
   clearTimeout(aTimer);
   if(!q.trim()){document.getElementById('artist-results').innerHTML='';return;}
@@ -845,6 +849,7 @@ async function runArtistSearch(q){
     el.innerHTML=`<div style="padding:10px;font-size:12px;color:var(--c3)">${results.length?'All results already followed.':'No artists found.'}</div>`;
     return;
   }
+  currentSearchResults = fresh;
   el.innerHTML=fresh.map(a=>{
     const[g1,g2]=palFor(a.name);
     const meta=[a.type,a.area,a.disambiguation].filter(Boolean).join(' · ');
@@ -855,17 +860,16 @@ async function runArtistSearch(q){
         <div class="sr-name">${esc(a.name)}</div>
         <div class="sr-meta">${esc(meta)}${topTag?` · ${esc(topTag)}`:''}</div>
       </div>
-      <button class="sr-add" data-artist="${esc(JSON.stringify({name:a.name,mbid:a.mbid,area:a.area,genre:a.tags[0]||null}))}" onclick="followArtistEl(this)">+ Follow</button>
+      <button class="sr-add" data-mbid="${a.mbid}" onclick="followArtistById(this.dataset.mbid)">+ Follow</button>
     </div>`;
   }).join('');
 }
 
-function followArtistEl(btn){
-  try{ followArtist(JSON.parse(btn.dataset.artist)); }catch(e){ console.warn('followArtist parse error',e); }
+function followArtistById(mbid){
+  const a = currentSearchResults.find(x => x.mbid === mbid);
+  if(a) followArtist({name: a.name, mbid: a.mbid, area: a.area, genre: a.tags[0]||null});
 }
-function removeArtistEl(btn){
-  try{ removeArtist(JSON.parse(btn.dataset.name)); }catch(e){ console.warn('removeArtist parse error',e); }
-}
+
 function followArtist(a){
   if(!myArtists.some(x=>x.mbid===a.mbid)){
     myArtists.push(a);
@@ -1113,7 +1117,7 @@ async function mbSimilarArtists(mbid) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = '9';
+const CACHE_VERSION = '10';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
