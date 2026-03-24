@@ -299,6 +299,7 @@ nav a.active{border-bottom-color:var(--ab);}
           <option value="am">Apple Music</option>
           <option value="rd">Reddit</option>
           <option value="aoty">Album of the Year</option>
+          <option value="mc">Metacritic</option>
         </select>
       </div>
       <!-- hidden count spans still needed for updateCounts() -->
@@ -726,14 +727,14 @@ function showStatus(html){document.getElementById('status-bar').innerHTML=html;}
 
 function updateCounts(){
   const cnt=s=>releases.filter(r=>r.source===s).length;
-  const ocN=cnt('oc'),rdN=cnt('rd'),dzN=cnt('dz'),amN=cnt('am'),aotyN=cnt('aoty');
+  const ocN=cnt('oc'),rdN=cnt('rd'),dzN=cnt('dz'),amN=cnt('am'),aotyN=cnt('aoty'),mcN=cnt('mc');
   document.getElementById('cnt-all').textContent=releases.length;
   document.getElementById('cnt-oc').textContent=ocN;
   document.getElementById('cnt-rd').textContent=rdN;
   document.getElementById('cnt-dz').textContent=dzN;
   document.getElementById('cnt-am').textContent=amN;
   document.getElementById('cnt-aoty').textContent=aotyN;
-  document.getElementById('cnt-mc').textContent=cnt('mc');
+  document.getElementById('cnt-mc').textContent=mcN;
   document.getElementById('cnt-alm').textContent=cnt('alm');
   const dd=document.getElementById('src-select');
   if(dd){
@@ -743,6 +744,7 @@ function updateCounts(){
     dd.options[3].text=`Deezer${dzN?` (${dzN})`:''}`;
     dd.options[4].text=`Apple Music${amN?` (${amN})`:''}`;
     dd.options[5].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
+    dd.options[6].text=`Metacritic${mcN?` (${mcN})`:''}`;
   }
 }
 
