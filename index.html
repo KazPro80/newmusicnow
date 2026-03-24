@@ -10,11 +10,14 @@
 <script>
 // ═══════════════════════════════════════════════════════════════
 //  CONFIGURATION
+//  Paste keys here once when deploying for others.
+//  Users of your hosted version never need to touch this.
 // ═══════════════════════════════════════════════════════════════
 const CONFIG = {
   WORKER_URL:    'https://broken-river-2a46.kazpro527.workers.dev',
   STORE:        'us',
 };
+// ═══════════════════════════════════════════════════════════════
 </script>
 
 <style>
@@ -28,7 +31,7 @@ const CONFIG = {
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;font-size:14px;}
 header{background:var(--bg2);border-bottom:1px solid var(--bdr);padding:0 2rem;display:flex;align-items:center;gap:2rem;height:58px;position:sticky;top:0;z-index:100;}
-.logo{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--ab);letter-spacing:-0.5px;white-space:nowrap;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.logo{font-family:'Fraunces',serif;font-size:21px;font-weight:700;color:var(--ab);letter-spacing:-0.5px;white-space:nowrap;display:flex;align-items:center;gap:8px;}
 .logo-sub{font-family:'DM Mono',monospace;font-size:9px;color:var(--c3);font-weight:400;letter-spacing:0.1em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--bdr);border-radius:3px;}
 nav{display:flex;flex:1;}
 nav a{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--c3);text-decoration:none;padding:0 1.2rem;height:58px;display:flex;align-items:center;border-bottom:2px solid transparent;transition:color 0.15s,border-color 0.15s;cursor:pointer;white-space:nowrap;}
@@ -95,28 +98,20 @@ nav a.active{border-bottom-color:var(--ab);}
 
 /* cards */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;margin-bottom:2rem;}
-.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;transition:border-color 0.15s,transform 0.15s;position:relative;}
+.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;transition:border-color 0.15s,transform 0.15s;cursor:pointer;position:relative;}
 .card:hover{border-color:var(--bdr2);transform:translateY(-2px);}
 .card.inlib{border-color:var(--ad);}
 .ca{width:100%;aspect-ratio:1;position:relative;overflow:hidden;background:var(--bg3);}
 .ca-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
 .ca img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 .ci{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:rgba(255,255,255,0.18);user-select:none;letter-spacing:-2px;z-index:1;}
-.cov{position:absolute;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;z-index:2;}
+.cov{position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;gap:8px;z-index:2;}
 .card:hover .cov{opacity:1;}
 .abtn{width:36px;height:36px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:transform 0.1s;}
 .abtn:hover{transform:scale(1.1);}
 .pbtn{background:var(--ab);color:#000;}
-.lbtn{background:rgba(255,255,255,0.15);color:#fff; position:absolute; top:12px; right:12px;}
+.lbtn{background:rgba(255,255,255,0.15);color:#fff;}
 .lbtn.inlib{background:rgba(212,146,42,0.35);color:var(--ab);}
-
-/* Player Icons */
-.play-row {display:flex; gap:8px; position:absolute; bottom:16px; left:0; right:0; justify-content:center; transform:translateY(10px); transition:transform 0.2s;}
-.card:hover .play-row {transform:translateY(0);}
-.p-icon {width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.1); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.15s;}
-.p-icon:hover {background:var(--ab); color:#000; transform:scale(1.1);}
-.p-icon svg {width:16px; height:16px; fill:currentColor;}
-
 .ci-info{padding:12px 13px 13px;}
 .ci-title{font-family:'Fraunces',serif;font-weight:500;font-size:14px;color:var(--cream);margin-bottom:2px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ci-artist{font-size:12px;color:var(--c2);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -132,9 +127,12 @@ nav a.active{border-bottom-color:var(--ab);}
 .src-badge{position:absolute;top:8px;left:8px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.08em;padding:2px 5px;border-radius:2px;font-weight:500;z-index:3;}
 .sb-dz{background:rgba(162,88,232,0.18);color:#c07af8;border:1px solid rgba(162,88,232,0.25);}
 .sb-am{background:rgba(252,60,68,0.15);color:#fc6b72;border:1px solid rgba(252,60,68,0.2);}
+.sb-dc{background:rgba(58,123,213,0.2);color:var(--blue);border:1px solid rgba(58,123,213,0.25);}
 .sb-aoty{background:rgba(46,158,126,0.15);color:var(--teal);border:1px solid rgba(46,158,126,0.2);}
-.sb-rd{background:rgba(255,69,0,0.15);color:#ff5520;border:1px solid rgba(255,69,0,0.2);}
+.sb-mc{background:rgba(255,210,30,0.12);color:#c8a820;border:1px solid rgba(255,210,30,0.2);}
+.sb-alm{background:rgba(160,100,220,0.15);color:#c080ff;border:1px solid rgba(160,100,220,0.2);}
 .sb-oc{background:rgba(0,90,200,0.18);color:#5ba3ff;border:1px solid rgba(0,90,200,0.3);}
+.sb-rd{background:rgba(255,69,0,0.18);color:#ff6534;border:1px solid rgba(255,69,0,0.3);}
 .new-chip{position:absolute;top:8px;right:8px;background:var(--ab);color:#000;font-family:'DM Mono',monospace;font-size:8px;font-weight:500;padding:2px 5px;border-radius:3px;z-index:3;letter-spacing:0.04em;}
 .score-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;position:absolute;bottom:8px;right:8px;z-index:3;}
 .sg{background:#1a4a2e;color:#4caf7d;border:1px solid #2a6a3e;}
@@ -239,15 +237,12 @@ nav a.active{border-bottom-color:var(--ab);}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:10px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--c2);letter-spacing:0.06em;z-index:300;transform:translateY(60px);opacity:0;transition:all 0.25s;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast span{color:var(--ab);}
-
-.clear-btn {background:none; border:none; color:var(--amber); font-family:'DM Mono', monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.05em; cursor:pointer; margin-left:12px; border-bottom:1px solid transparent; transition:border-color 0.15s;}
-.clear-btn:hover {border-color:var(--amber);}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo" onclick="resetFilters()">◉ Wavelength <span class="logo-sub">Live</span></div>
+  <div class="logo">◉ Wavelength <span class="logo-sub">Live</span></div>
   <nav>
     <a class="active" onclick="gotoTab('browse',this)">Browse</a>
     <a onclick="gotoTab('foryou',this)">For You</a>
@@ -259,8 +254,8 @@ nav a.active{border-bottom-color:var(--ab);}
       <div class="pill on"  id="pill-dz"><span class="dot"></span>Deezer</div>
       <div class="pill"     id="pill-wk"><span class="dot"></span>Apple+More</div>
       <div class="pill on"  id="pill-mb"><span class="dot"></span>MusicBrainz</div>
-      <div class="pill"     id="pill-rd"><span class="dot"></span>Reddit</div>
       <div class="pill"     id="pill-oc"><span class="dot"></span>Official Charts</div>
+      <div class="pill"     id="pill-rd"><span class="dot"></span>Reddit</div>
     </div>
     <button class="btn" onclick="openSettings()">⚙ Keys</button>
     <button class="btn btn-g" onclick="openArtistModal()">⊕ Add Artists</button>
@@ -271,22 +266,22 @@ nav a.active{border-bottom-color:var(--ab);}
   <aside class="sidebar">
     <div>
       <div class="sb-lbl">Date Range</div>
-      <div style="padding:0 0.5rem;display:flex;flex-direction:column;gap:8px;">
+      <div style="padding:0 0.5rem;display:flex;flex-direction:column;gap:6px;">
         <div class="type-row" id="date-presets">
           <span class="tt on" data-days="7"  onclick="setDatePreset(7,this)">This week</span>
           <span class="tt"    data-days="14" onclick="setDatePreset(14,this)">2 weeks</span>
           <span class="tt"    data-days="30" onclick="setDatePreset(30,this)">Month</span>
           <span class="tt"    data-days="0"  onclick="setDatePreset(0,this)">All</span>
         </div>
-        <div style="display:flex;align-items:center;gap:6px; flex-wrap:wrap;">
-          <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;min-width:0;flex:1;cursor:pointer" onchange="setCustomDate()">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;flex:1;cursor:pointer" onchange="setCustomDate()">
           <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--c3)">to</span>
-          <input type="date" id="date-to"   class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;min-width:0;flex:1;cursor:pointer" onchange="setCustomDate()">
+          <input type="date" id="date-to"   class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:5px 8px;flex:1;cursor:pointer" onchange="setCustomDate()">
         </div>
       </div>
 
-      <div class="sb-lbl" style="margin-top:1.5rem">Release Type</div>
-      <div class="type-row" id="type-pills">
+      <div class="sb-lbl" style="margin-top:0.5rem">Release Type</div>
+      <div class="type-row">
         <span class="tt on" onclick="setType('all',this)">All</span>
         <span class="tt" onclick="setType('Album',this)">Albums</span>
         <span class="tt" onclick="setType('Single',this)">Singles</span>
@@ -299,13 +294,14 @@ nav a.active{border-bottom-color:var(--ab);}
       <div style="padding:0 0.5rem">
         <select id="src-select" class="fi" style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 10px;cursor:pointer;width:100%" onchange="setSrcDd(this.value)">
           <option value="all">All sources (<span id="cnt-all">—</span>)</option>
-          <option value="oc">Official Charts</option>
-          <option value="rd">Reddit & Indies</option>
+          <option value="oc">Official Charts UK</option>
           <option value="dz">Deezer</option>
           <option value="am">Apple Music</option>
+          <option value="rd">Reddit</option>
           <option value="aoty">Album of the Year</option>
         </select>
       </div>
+      <!-- hidden count spans still needed for updateCounts() -->
       <span id="cnt-oc" style="display:none">—</span>
       <span id="cnt-rd" style="display:none">—</span>
       <span id="cnt-dz" style="display:none">—</span>
@@ -321,6 +317,8 @@ nav a.active{border-bottom-color:var(--ab);}
   </aside>
 
   <main class="main">
+
+    <!-- BROWSE -->
     <div id="tab-browse" class="tab-page active">
       <div class="pg-hdr">
         <div>
@@ -350,6 +348,7 @@ nav a.active{border-bottom-color:var(--ab);}
       </div>
     </div>
 
+    <!-- FOR YOU -->
     <div id="tab-foryou" class="tab-page">
       <div class="pg-hdr">
         <div><div class="pg-title">For You</div><div class="pg-sub">MusicBrainz artist relations · Claude editorial picks</div></div>
@@ -360,6 +359,7 @@ nav a.active{border-bottom-color:var(--ab);}
       </div>
     </div>
 
+    <!-- MY ARTISTS -->
     <div id="tab-myartists" class="tab-page">
       <div class="pg-hdr">
         <div><div class="pg-title">My Artists <span class="lc" id="artist-count">0</span></div><div class="pg-sub">New releases flagged automatically</div></div>
@@ -371,6 +371,7 @@ nav a.active{border-bottom-color:var(--ab);}
       </div>
     </div>
 
+    <!-- LIBRARY -->
     <div id="tab-library" class="tab-page">
       <div class="pg-hdr">
         <div><div class="pg-title">My Library <span class="lc" id="lib-count">0</span></div><div class="pg-sub">Albums and releases you've saved</div></div>
@@ -381,6 +382,7 @@ nav a.active{border-bottom-color:var(--ab);}
   </main>
 </div>
 
+<!-- SETTINGS -->
 <div class="overlay" id="ov-settings" onclick="bgClose(event,'ov-settings')">
   <div class="modal">
     <button class="m-close" onclick="closeOv('ov-settings')">✕</button>
@@ -389,20 +391,28 @@ nav a.active{border-bottom-color:var(--ab);}
 
     <div class="fg">
       <div class="fl">
-        <span>Cloudflare Worker URL</span>
+        <span>Cloudflare Worker URL <span style="color:#c07af8;font-size:9px">— Apple Music · AOTY · Metacritic · Bandcamp · AllMusic</span></span>
         <a href="https://workers.cloudflare.com" target="_blank">Deploy free →</a>
       </div>
       <input class="fi" id="in-worker" type="text" placeholder="https://wavelength-proxy.yourname.workers.dev">
+      <div class="fh">Free · 5 min setup · Deploy wavelength-worker.js · Adds Apple Music + critic scores + editorial picks</div>
     </div>
     <div class="fg">
-      <div class="fl"><span>MusicBrainz</span></div>
+      <div class="fl"><span>MusicBrainz <span style="color:var(--teal);font-size:9px">— artist search & For You recommendations</span></span></div>
       <div class="fh" style="background:var(--bg4);border:1px solid var(--bdr);border-radius:6px;padding:9px 12px;color:var(--c2)">No key needed — MusicBrainz is a free open database. Artist search and the For You tab work automatically.</div>
     </div>
     <div class="fg">
-      <div class="fl"><span>Store Region</span></div>
+      <div class="fl"><span>Store Region <span style="color:var(--c3);font-size:9px">— Apple Music (via worker)</span></span></div>
       <select class="fi" id="in-store" style="font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">
         <option value="us">United States</option>
         <option value="gb">United Kingdom</option>
+        <option value="au">Australia</option>
+        <option value="ca">Canada</option>
+        <option value="de">Germany</option>
+        <option value="fr">France</option>
+        <option value="jp">Japan</option>
+        <option value="br">Brazil</option>
+        <option value="mx">Mexico</option>
       </select>
     </div>
     <div style="display:flex;gap:8px;margin-top:0.5rem">
@@ -412,6 +422,7 @@ nav a.active{border-bottom-color:var(--ab);}
   </div>
 </div>
 
+<!-- ARTIST SEARCH -->
 <div class="overlay" id="ov-artists" onclick="bgClose(event,'ov-artists')">
   <div class="modal">
     <button class="m-close" onclick="closeOv('ov-artists')">✕</button>
@@ -439,13 +450,14 @@ let myArtists = safeJSON('wl_artists', []);
 let library   = safeJSON('wl_library',  []);
 let activeTab = 'browse';
 let typeF = 'all', srcF = 'all', genreF = 'all', searchQ = '';
-let dateFrom = '', dateTo = '';  
+let dateFrom = '', dateTo = '';  // ISO strings e.g. '2026-03-14', empty = no filter
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 const PAL=[['#1a3a2a','#2e6e4a'],['#2a1a3a','#6e2e8e'],['#3a2a1a','#8e6e2e'],['#1a2a3a','#2e4e8e'],['#3a1a1a','#8e2e2e'],['#1a3a3a','#2e7e7e'],['#2a3a1a','#5e8e2e'],['#3a1a2a','#8e2e5e'],['#1a1a3a','#3e3e8e'],['#3a2a2a','#7e5e2e'],['#2a2a3a','#5e5e8e'],['#1a3a1a','#3e8e3e']];
 function palFor(s){let h=0;for(const c of String(s))h=Math.imul(31,h)+c.charCodeAt(0)|0;return PAL[Math.abs(h)%PAL.length];}
 function inits(t){return(t||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function relDate(iso){
   if(!iso)return'';
   const d=new Date(iso+'T00:00:00'),now=new Date();
@@ -457,12 +469,71 @@ function relDate(iso){
   return`${M[d.getMonth()]} ${d.getDate()}`;
 }
 
+// ─── DEEZER ──────────────────────────────────────────────────────────────────
+// Try direct first (works when hosted). If blocked (local file), fall through
+// to worker. Worker always fetches server-side so it always succeeds.
+async function fetchDeezerDirect(){
+  const[editRes,chartRes,trackRes]=await Promise.allSettled([
+    fetch('https://api.deezer.com/editorial/0/releases?limit=100').then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
+    fetch('https://api.deezer.com/chart/0/albums?limit=100').then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
+    fetch('https://api.deezer.com/chart/0/tracks?limit=100').then(r=>{if(!r.ok)throw new Error(r.status);return r.json();}),
+  ]);
+  const seen=new Set(), out=[];
+  const addAlbum=(item,type='Album')=>{
+    if(!item?.id||seen.has('dz-'+item.id))return;
+    seen.add('dz-'+item.id);
+    const rd=item.release_date||'';
+    const isNew=rd?(Date.now()-new Date(rd+'T00:00:00').getTime())<4*864e5:false;
+    out.push({id:'dz-'+item.id,title:item.title||'Unknown',artist:item.artist?.name||'Unknown',type,date:rd,dateRaw:rd,genre:item.genres?.data?.[0]?.name||null,source:'dz',img:item.cover_xl||item.cover_big||null,url:item.link||null,isNew});
+  };
+  if(editRes.status==='fulfilled')for(const a of editRes.value?.data||[])addAlbum(a);
+  if(chartRes.status==='fulfilled')for(const a of chartRes.value?.data||[])addAlbum(a);
+  if(trackRes.status==='fulfilled')for(const t of trackRes.value?.data||[]){
+    const alb=t.album;
+    if(alb&&!seen.has('dz-t-'+alb.id)){seen.add('dz-t-'+alb.id);out.push({id:'dz-t-'+alb.id,title:alb.title||t.title||'Unknown',artist:t.artist?.name||'Unknown',type:'Single',date:'',dateRaw:'',genre:null,source:'dz',img:alb.cover_xl||alb.cover_big||null,url:alb.tracklist||null,isNew:false});}
+  }
+  if(!out.length)throw new Error('No results');
+  return out;
+}
+
+async function fetchDeezer(){
+  try{return await fetchDeezerDirect();}
+  catch{
+    // Blocked by CORS on local file — fall back to worker
+    if(workerUrl)return await workerFetch('deezer');
+    return[];
+  }
+}
+
+async function workerFetch(source){
+  if(!workerUrl)return[];
+  try{
+    const r=await fetch(`${workerUrl.replace(/\/+$/,'')}/${source}`,{cache:'no-store'});
+    if(!r.ok)return[];
+    const d=await r.json();
+    return(d.releases||[]).map(rel=>{
+      if(rel.dateRaw&&(!rel.date||rel.date===rel.dateRaw)){rel.date=relDate(rel.dateRaw);}
+      return rel;
+    });
+  }catch(e){console.warn(`Worker [${source}]:`,e);return[];}
+}
+
+
+async function dzSearchArtist(term){
+  try{
+    const r=await fetch(`https://api.deezer.com/search/artist?q=${encodeURIComponent(term)}&limit=8`);
+    if(!r.ok)return[];
+    return(await r.json()).data||[];
+  }catch{return[];}
+}
+
+// ─── PILLS ───────────────────────────────────────────────────────────────────
 function updatePills(){
   setPill('pill-dz',true);
   setPill('pill-wk',!!workerUrl);
   setPill('pill-mb',true);
-  setPill('pill-rd',!!workerUrl);
   setPill('pill-oc',!!workerUrl);
+  setPill('pill-rd',!!workerUrl);
 }
 function setPill(id,on){
   const el=document.getElementById(id);if(!el)return;
@@ -470,6 +541,7 @@ function setPill(id,on){
   el.querySelector('.dot').style.background=on?'var(--teal)':'var(--c3)';
 }
 
+// ─── SCORE BADGE ─────────────────────────────────────────────────────────────
 function scoreBadge(score){
   if(!score||score<1)return'';
   const cls=score>=80?'sg':score>=61?'sy':score>=40?'so':'sr';
@@ -480,15 +552,13 @@ function scoreBadge(score){
 const SRC_BADGES={
   dz:  '<span class="src-badge sb-dz">DZ</span>',
   am:  '<span class="src-badge sb-am">AM</span>',
+  dc:  '<span class="src-badge sb-dc">VINYL</span>',
   aoty:'<span class="src-badge sb-aoty">AOTY</span>',
-  rd:  '<span class="src-badge sb-rd">REDDIT</span>',
+  mc:  '<span class="src-badge sb-mc">MC</span>',
+  alm: '<span class="src-badge sb-alm">ALM</span>',
   oc:  '<span class="src-badge sb-oc">OC</span>',
+  rd:  '<span class="src-badge sb-rd">REDDIT</span>',
 };
-
-// SVG Icons for Music Players
-const ICON_SPOTIFY = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.745 3.808-.87 7.076-.496 9.715 1.115.293.18.386.563.207.854zm1.214-2.71c-.226.366-.704.482-1.07.256-2.695-1.655-6.815-2.14-9.873-1.17-.413.13-8.58-.096-.988-.51-.13-.414.095-.857.51-.987 3.51-1.113 8.08-.57 11.176 1.334.367.226.483.704.257 1.07zm.106-2.836C14.73 9.014 8.544 8.785 4.98 9.87c-.496.15-1.01-.13-1.16-.626-.15-.495.13-1.01.626-1.16 4.14-1.265 10.97-1.01 14.765 1.242.443.264.587.842.324 1.285-.265.444-.843.588-1.286.325z"/>`;
-const ICON_APPLE   = `<path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.099-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/>`;
-const ICON_YOUTUBE = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1.9 14.5v-9l7.7 4.5-7.7 4.5z"/>`;
 
 function card(rel){
   const inLib=library.some(x=>x.id===rel.id);
@@ -497,13 +567,10 @@ function card(rel){
   const srcBadge=SRC_BADGES[rel.source]||'';
   const newChip=rel.isNew?'<span class="new-chip">NEW</span>':'';
   const scoreEl=rel.score?scoreBadge(rel.score):'';
-  
-  // Universal Search Links
-  const query = encodeURIComponent(rel.artist + ' ' + rel.title);
-  const spLink = `https://open.spotify.com/search/${query}/albums`;
-  const amLink = `https://music.apple.com/us/search?term=${query}`;
-  const ytLink = `https://music.youtube.com/search?q=${query}`;
-
+  const q=encodeURIComponent(rel.artist+' '+rel.title);
+  const spUrl=`https://open.spotify.com/search/${q}/albums`;
+  const amUrl=`https://music.apple.com/us/search?term=${q}`;
+  const ytUrl=`https://music.youtube.com/search?q=${q}`;
   return`<div class="card${inLib?' inlib':''}" id="card-${rel.id}">
     ${srcBadge}${newChip}${scoreEl}
     <div class="ca">
@@ -512,11 +579,11 @@ function card(rel){
       </div>
       ${rel.img?`<img src="${esc(rel.img)}" alt="" loading="lazy" onerror="this.remove()">`:''}
       <div class="cov">
-        <button class="abtn lbtn${inLib?' inlib':''}" id="ab-${rel.id}" onclick="event.stopPropagation();toggleLib(${JSON.stringify(rel.id)})" title="${inLib?'In library':'Add to Library'}">${inLib?'✓':'+'}</button>
-        <div class="play-row">
-          <div class="p-icon" title="Listen on Spotify" onclick="event.stopPropagation();window.open('${spLink}','_blank')"><svg viewBox="0 0 24 24">${ICON_SPOTIFY}</svg></div>
-          <div class="p-icon" title="Listen on Apple Music" onclick="event.stopPropagation();window.open('${amLink}','_blank')"><svg viewBox="0 0 24 24">${ICON_APPLE}</svg></div>
-          <div class="p-icon" title="Listen on YouTube Music" onclick="event.stopPropagation();window.open('${ytLink}','_blank')"><svg viewBox="0 0 24 24">${ICON_YOUTUBE}</svg></div>
+        <button class="abtn lbtn${inLib?' inlib':''}" id="ab-${rel.id}" onclick="event.stopPropagation();toggleLib(${JSON.stringify(rel.id)})" title="${inLib?'In library':'Add to Library'}" style="position:absolute;top:10px;right:10px;">${inLib?'✓':'+'}</button>
+        <div style="display:flex;gap:8px;position:absolute;bottom:14px;left:0;right:0;justify-content:center;">
+          <div class="abtn" style="background:rgba(255,255,255,0.1);color:#fff;font-size:11px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="event.stopPropagation();window.open('${spUrl}','_blank')" title="Spotify">S</div>
+          <div class="abtn pbtn" style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="event.stopPropagation();window.open('${amUrl}','_blank')" title="Apple Music">♪</div>
+          <div class="abtn" style="background:rgba(255,255,255,0.1);color:#fff;font-size:11px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="event.stopPropagation();window.open('${ytUrl}','_blank')" title="YouTube Music">▶</div>
         </div>
       </div>
     </div>
@@ -534,7 +601,7 @@ function card(rel){
 
 function skels(n){return Array(n).fill(`<div class="skel"><div class="sk" style="width:100%;aspect-ratio:1"></div><div style="padding:12px 13px"><div class="sk" style="height:10px;width:75%;margin-bottom:8px"></div><div class="sk" style="height:10px;width:55%;margin-bottom:8px"></div><div class="sk" style="height:8px;width:40%"></div></div></div>`).join('');}
 
-// ─── BROWSER-SIDE CACHE ───────────────────────────────────────────────
+// ─── BROWSE (KV-cached — all sources pre-fetched server-side) ────────────────
 function mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR){
   const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const key=r=>norm(r.artist)+'|'+norm(r.title);
@@ -547,55 +614,46 @@ function mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR){
   return out.sort((a,b)=>{if(a.isNew&&!b.isNew)return -1;if(!a.isNew&&b.isNew)return 1;return(b.dateRaw||'').localeCompare(a.dateRaw||'');});
 }
 
-// ─── BROWSE ───────────────────────────────────────────────────────────────────
-async function workerFetch(endpoint) {
-  if (!workerUrl) return [];
-  try {
-    const r = await fetch(`${workerUrl}/${endpoint}`);
-    const data = await r.json();
-    return data.releases || [];
-  } catch {
-    return [];
-  }
-}
-
 async function loadBrowse(force=false){
   if(!force&&releases.length){renderBrowse();return;}
   document.getElementById('browse-body').innerHTML=`<div class="grid">${skels(18)}</div>`;
   document.getElementById('rsum').style.display='none';
   document.getElementById('ed-section').style.display='none';
   setDateLabel();
-  showStatus(`<div class="st"><div class="spin"></div>Loading from cache…</div>`);
+  showStatus(`<div class="st"><div class="spin"></div>Loading…</div>`);
 
-  try {
-    const [dzR, rdR, ocR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
-      workerFetch('deezer'),
-      workerFetch('reddit'), 
+  try{
+    // All sources served from KV — fire all in parallel, all fast
+    const [rdR,ocR,amR,dzR,aotyR,mcR,almR,bcR] = await Promise.all([
+      workerFetch('reddit'),
       workerFetch('officialcharts'),
       workerFetch('applemusic'),
+      workerFetch('deezer'),
       workerFetch('aoty'),
       workerFetch('metacritic'),
       workerFetch('allmusic'),
-      workerFetch('bandcamp')
+      workerFetch('bandcamp'),
     ]);
 
-    releases = mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR);
-    
-    const pfEditorial = rdR.filter(r => r.blurb).map(r => ({...r, type:'Editorial'})).slice(0, 4);
-    editorial = [...pfEditorial,...bcR,...almR];
-
-    updateCounts();
-    buildGenreSidebar();
-    renderBrowse();
-    renderEditorial();
+    releases=mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR);
+    editorial=[...bcR,...almR];
+    updateCounts();buildGenreSidebar();renderBrowse();renderEditorial();
 
     const total=rdR.length+ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
     let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
     if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
     st+=`</div>`;
+    const sp=[];
+    if(rdR.length)sp.push(`${rdR.length} Reddit`);
+    if(ocR.length)sp.push(`${ocR.length} Official Charts`);
+    if(amR.length)sp.push(`${amR.length} Apple Music`);
+    if(dzR.length)sp.push(`${dzR.length} Deezer`);
+    if(aotyR.length)sp.push(`${aotyR.length} AOTY`);
+    if(mcR.length)sp.push(`${mcR.length} Metacritic`);
+    if(almR.length)sp.push(`${almR.length} AllMusic`);
+    if(sp.length)st+=`<div class="st" style="margin-left:4px;color:var(--c3)">· ${sp.join(' · ')}</div>`;
     showStatus(st);
-
-  } catch (e) {
+  }catch(e){
     showStatus(`<div class="st" style="color:var(--red)">Error loading: ${e.message}</div>`);
   }
 }
@@ -603,18 +661,6 @@ function setDateLabel(){
   const d=new Date();
   document.getElementById('date-lbl').textContent=
     d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-}
-
-function resetFilters() {
-  typeF = 'all'; srcF = 'all'; genreF = 'all'; searchQ = '';
-  document.querySelectorAll('#type-pills .tt').forEach(t=>t.classList.remove('on'));
-  document.querySelector('#type-pills .tt').classList.add('on'); 
-  document.getElementById('src-select').value = 'all';
-  document.getElementById('browse-q').value = '';
-  document.getElementById('s-clear').style.display = 'none';
-  initDatePicker(); 
-  buildGenreSidebar();
-  renderBrowse();
 }
 
 function applyFilters(list){
@@ -635,29 +681,21 @@ function sortReleases(list){
   const c=[...list];
   if(mode==='alpha')return c.sort((a,b)=>a.title.localeCompare(b.title));
   if(mode==='artist')return c.sort((a,b)=>a.artist.localeCompare(b.artist));
-  return c; 
+  return c; // already sorted newest-first
 }
 
 function renderBrowse(){
   const body=document.getElementById('browse-body');
   const sumEl=document.getElementById('rsum');
   const filtered=sortReleases(applyFilters(releases));
-  
-  const hasF=searchQ||typeF!=='all'||srcF!=='all'||genreF!=='all'||dateFrom!==''||dateTo!=='';
-  
+  const hasF=searchQ||typeF!=='all'||srcF!=='all'||genreF!=='all';
   if(!filtered.length){
     sumEl.style.display='none';
-    body.innerHTML=`<div class="empty"><div class="e-icon">◎</div><div class="e-title">Nothing matched</div><div class="e-sub">Try a different filter or search term.<br><button class="btn" style="margin-top:8px" onclick="resetFilters()">Reset All Filters</button></div></div>`;
+    body.innerHTML=`<div class="empty"><div class="e-icon">◎</div><div class="e-title">Nothing matched</div><div class="e-sub">Try a different filter or search term.${searchQ?'<br><button class="btn" style="margin-top:8px" onclick="clearSearch()">Clear search</button>':''}</div></div>`;
     return;
   }
-  
-  if(hasF){
-    sumEl.style.display='block';
-    sumEl.innerHTML=`Showing <strong>${filtered.length}</strong> of ${releases.length} releases${searchQ?` · "<strong>${esc(searchQ)}</strong>"`:''} <button class="clear-btn" onclick="resetFilters()">✕ Clear Filters</button>`;
-  } else {
-    sumEl.style.display='none';
-  }
-  
+  if(hasF){sumEl.style.display='block';sumEl.innerHTML=`Showing <strong>${filtered.length}</strong> of ${releases.length} releases${searchQ?` · "<strong>${esc(searchQ)}</strong>"`:''}`;}
+  else sumEl.style.display='none';
   body.innerHTML=`<div class="grid">${filtered.map(card).join('')}</div>`;
 }
 
@@ -666,7 +704,7 @@ function renderEditorial(){
   const strip=document.getElementById('ed-strip');
   if(!editorial||!editorial.length){sec.style.display='none';return;}
   sec.style.display='block';
-  const srcLabel={bc:'Bandcamp Daily',rd:'Reddit',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
+  const srcLabel={bc:'Bandcamp Daily',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
   strip.innerHTML=editorial.map(item=>{
     const[g1,g2]=palFor(item.id||item.title);
     return`<div class="ed-card">
@@ -688,19 +726,20 @@ function showStatus(html){document.getElementById('status-bar').innerHTML=html;}
 
 function updateCounts(){
   const cnt=s=>releases.filter(r=>r.source===s).length;
-  const ocN=cnt('oc'), rdN=cnt('rd'), dzN=cnt('dz'), amN=cnt('am'), aotyN=cnt('aoty');
+  const ocN=cnt('oc'),rdN=cnt('rd'),dzN=cnt('dz'),amN=cnt('am'),aotyN=cnt('aoty');
   document.getElementById('cnt-all').textContent=releases.length;
   document.getElementById('cnt-oc').textContent=ocN;
   document.getElementById('cnt-rd').textContent=rdN;
   document.getElementById('cnt-dz').textContent=dzN;
   document.getElementById('cnt-am').textContent=amN;
   document.getElementById('cnt-aoty').textContent=aotyN;
-  
+  document.getElementById('cnt-mc').textContent=cnt('mc');
+  document.getElementById('cnt-alm').textContent=cnt('alm');
   const dd=document.getElementById('src-select');
   if(dd){
     dd.options[0].text=`All sources (${releases.length})`;
     dd.options[1].text=`Official Charts${ocN?` (${ocN})`:''}`;
-    dd.options[2].text=`Reddit & Indies${rdN?` (${rdN})`:''}`;
+    dd.options[2].text=`Reddit${rdN?` (${rdN})`:''}`;
     dd.options[3].text=`Deezer${dzN?` (${dzN})`:''}`;
     dd.options[4].text=`Apple Music${amN?` (${amN})`:''}`;
     dd.options[5].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
@@ -708,27 +747,27 @@ function updateCounts(){
 }
 
 function buildGenreSidebar(){
+  // Count genres from the already source+type filtered list so numbers match what you see
   const base=releases.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
     if(srcF!=='all'&&r.source!==srcF)return false;
     if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
     if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
-    return true;
+    return r.genre;
   });
-
-  const filteredTotal = base.length;
-  let h=`<div class="fp ${genreF==='all'?'on':''}" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${filteredTotal}</span></div>`;
-
-  const withGenre = base.filter(r => r.genre);
-  if(!withGenre.length){
-    h += `<div style="font-size:11px;color:var(--c3);padding:0.5rem;line-height:1.6">No genre tags available for this specific filter.</div>`;
-  } else {
-    const map={}; 
-    withGenre.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
-    const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
-    h+=genres.map(([g,c])=>`<div class="fp ${genreF===g?'on':''}" data-genre="${esc(g)}"><span class="fp-n">${esc(g)}</span><span class="fp-c">${c}</span></div>`).join('');
-  }
-
+  if(!base.length){document.getElementById('genre-sb').innerHTML=`<div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Genre data loads from Deezer and Apple Music.</div>`;return;}
+  const map={};base.forEach(r=>{map[r.genre]=(map[r.genre]||0)+1;});
+  const genres=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,14);
+  // Total filtered releases (regardless of whether they have genre data)
+  const filteredTotal = releases.filter(r=>{
+    if(typeF!=='all'&&r.type!==typeF)return false;
+    if(srcF!=='all'&&r.source!==srcF)return false;
+    if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
+    if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
+    return true;
+  }).length;
+  let h=`<div class="fp on" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${filteredTotal}</span></div>`;
+  h+=genres.map(([g,c])=>`<div class="fp" data-genre="${esc(g)}"><span class="fp-n">${esc(g)}</span><span class="fp-c">${c}</span></div>`).join('');
   document.getElementById('genre-sb').innerHTML=h;
   document.querySelectorAll('#genre-sb .fp').forEach(el=>{
     el.addEventListener('click',()=>{
@@ -743,8 +782,13 @@ function buildGenreSidebar(){
 // ─── SEARCH & FILTERS ────────────────────────────────────────────────────────
 function onSearch(v){searchQ=v;document.getElementById('s-clear').style.display=v?'block':'none';if(activeTab==='browse')renderBrowse();}
 function clearSearch(){searchQ='';document.getElementById('browse-q').value='';document.getElementById('s-clear').style.display='none';if(activeTab==='browse')renderBrowse();}
-function setType(v,el){typeF=v;document.querySelectorAll('#type-pills .tt').forEach(t=>t.classList.remove('on'));el.classList.add('on');buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
-function setSrcDd(v){srcF=v;buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
+function setType(v,el){typeF=v;document.querySelectorAll('.tt').forEach(t=>t.classList.remove('on'));el.classList.add('on');buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
+function setSrcDd(v){
+  srcF=v;
+  buildGenreSidebar();
+  if(activeTab==='browse')renderBrowse();
+}
+function setSrc(v,el){srcF=v;const dd=document.getElementById('src-select');if(dd)dd.value=v;buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
 
 function setDatePreset(days, el){
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
@@ -761,24 +805,25 @@ function setDatePreset(days, el){
     document.getElementById('date-from').value = dateFrom;
     document.getElementById('date-to').value   = dateTo;
   }
-  buildGenreSidebar();
   if(activeTab==='browse')renderBrowse();
 }
 
 function setCustomDate(){
   dateFrom = document.getElementById('date-from').value;
   dateTo   = document.getElementById('date-to').value;
+  // Deselect preset pills since user is now using custom range
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
-  buildGenreSidebar();
   if(activeTab==='browse')renderBrowse();
 }
 
+// Initialise date inputs to this week on load
 function initDatePicker(){
-  document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
-  document.querySelector('#date-presets .tt[data-days="0"]').classList.add('on');
-  dateFrom=''; dateTo='';
-  document.getElementById('date-from').value='';
-  document.getElementById('date-to').value='';
+  const to   = new Date();
+  const from = new Date(+to - 7*864e5);
+  dateTo   = to.toISOString().slice(0,10);
+  dateFrom = from.toISOString().slice(0,10);
+  document.getElementById('date-from').value = dateFrom;
+  document.getElementById('date-to').value   = dateTo;
 }
 
 // ─── LIBRARY ─────────────────────────────────────────────────────────────────
@@ -816,7 +861,7 @@ function renderArtists(){
     const artRels=releases.filter(r=>norm(r.artist)===norm(a.name));
     h+=`<div class="artist-card${artRels.length?' hasnew':''}">
       ${artRels.length?`<div class="nb">${artRels.length} new</div>`:''}
-      <button class="rm-btn" data-name="${esc(a.name)}" onclick="removeArtist(this.dataset.name)">✕</button>
+      <button class="rm-btn" data-name="${esc(JSON.stringify(a.name))}" onclick="removeArtistEl(this)">✕</button>
       <div class="av" style="background:linear-gradient(135deg,${g1},${g2})">${a.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
       <div class="an">${esc(a.name)}</div>
       ${a.genre?`<div class="am">${esc(a.genre)}</div>`:''}
@@ -831,10 +876,8 @@ function renderArtists(){
 }
 function removeArtist(name){myArtists=myArtists.filter(a=>a.name!==name);localStorage.setItem('wl_artists',JSON.stringify(myArtists));renderArtists();}
 
-// ─── ARTIST SEARCH ─────────────────────────────────────────────
+// ─── ARTIST SEARCH (MusicBrainz) ─────────────────────────────────────────────
 let aTimer=null;
-let currentSearchResults=[]; 
-
 function debouncedArtistSearch(q){
   clearTimeout(aTimer);
   if(!q.trim()){document.getElementById('artist-results').innerHTML='';return;}
@@ -849,7 +892,6 @@ async function runArtistSearch(q){
     el.innerHTML=`<div style="padding:10px;font-size:12px;color:var(--c3)">${results.length?'All results already followed.':'No artists found.'}</div>`;
     return;
   }
-  currentSearchResults = fresh;
   el.innerHTML=fresh.map(a=>{
     const[g1,g2]=palFor(a.name);
     const meta=[a.type,a.area,a.disambiguation].filter(Boolean).join(' · ');
@@ -860,21 +902,23 @@ async function runArtistSearch(q){
         <div class="sr-name">${esc(a.name)}</div>
         <div class="sr-meta">${esc(meta)}${topTag?` · ${esc(topTag)}`:''}</div>
       </div>
-      <button class="sr-add" data-mbid="${a.mbid}" onclick="followArtistById(this.dataset.mbid)">+ Follow</button>
+      <button class="sr-add" data-artist="${esc(JSON.stringify({name:a.name,mbid:a.mbid,area:a.area,genre:a.tags[0]||null}))}" onclick="followArtistEl(this)">+ Follow</button>
     </div>`;
   }).join('');
 }
 
-function followArtistById(mbid){
-  const a = currentSearchResults.find(x => x.mbid === mbid);
-  if(a) followArtist({name: a.name, mbid: a.mbid, area: a.area, genre: a.tags[0]||null});
+function followArtistEl(btn){
+  try{ followArtist(JSON.parse(btn.dataset.artist)); }catch(e){ console.warn('followArtist parse error',e); }
 }
-
+function removeArtistEl(btn){
+  try{ removeArtist(JSON.parse(btn.dataset.name)); }catch(e){ console.warn('removeArtist parse error',e); }
+}
 function followArtist(a){
   if(!myArtists.some(x=>x.mbid===a.mbid)){
     myArtists.push(a);
     localStorage.setItem('wl_artists',JSON.stringify(myArtists));
     toast('Following '+a.name);
+    // Pre-fetch their releases into the cache in the background
     if(a.mbid)mbArtistReleases(a.mbid).then(rels=>{
       if(rels.length){
         mbReleasesCache[a.mbid]=rels;
@@ -888,6 +932,9 @@ function followArtist(a){
 }
 
 // ─── FOR YOU ─────────────────────────────────────────────────────────────────
+// ─── FOR YOU — MusicBrainz powered ───────────────────────────────────────────
+// Cache MB release lookups in localStorage — invalidated after 6 hours.
+// Wrapped in try/catch so corrupted localStorage data never crashes the app.
 let mbReleasesCache = (()=>{ try{ return JSON.parse(localStorage.getItem('wl_mb_cache')||'{}'); }catch{ return {}; } })();
 const MB_CACHE_TTL  = 6 * 3600 * 1000;
 
@@ -905,63 +952,70 @@ function mbCacheSet(mbid, releases){
 async function buildRecs(){
   if(!myArtists.length) return;
   const el = document.getElementById('recs-body');
-  const mbArtists = myArtists.filter(a => a.mbid);
 
-  if(!mbArtists.length) {
-    el.innerHTML = `<div class="empty"><div class="e-icon">◎</div><div class="e-title">No MusicBrainz Data</div><div class="e-sub">We need at least one artist with a MusicBrainz ID to find recommendations.</div></div>`;
-    return;
-  }
+  // Only artists with MBIDs can use the full MB pipeline
+  const mbArtists   = myArtists.filter(a => a.mbid);
+  const noMbArtists = myArtists.filter(a => !a.mbid);
 
-  el.innerHTML = `<div class="lr"><div class="spin"></div>Building your custom discovery feed…</div>`;
+  if(!mbArtists.length && !noMbArtists.length) return;
+
+  el.innerHTML = `<div class="lr"><div class="spin"></div>Looking up releases via MusicBrainz…</div>`;
 
   const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const candidates = [];
   const addedIds = new Set();
-  
-  // Create a list of artists you already follow so we can BAN them from the recommendations!
-  const allFollowed = myArtists.map(a=>norm(a.name));
 
   const addCandidate = (rel, because) => {
-    // If the album is by an artist you already follow, ignore it!
-    if(allFollowed.includes(norm(rel.artist))) return;
-    
     if(addedIds.has(rel.id)) return;
     addedIds.add(rel.id);
     candidates.push({...rel, because});
   };
 
+  // Step 1: Fetch new releases for each followed artist by MBID
+  // Use cache to avoid hammering MB on every load
   const artistProgress = document.createElement('div');
   artistProgress.className = 'lr';
   el.innerHTML = '';
   el.appendChild(artistProgress);
 
-  // Shuffle your followed artists so we check different ones each time you refresh
-  const shuffledBaseArtists = [...mbArtists].sort(() => 0.5 - Math.random()).slice(0, 4);
+  for(const artist of mbArtists){
+    artistProgress.innerHTML = `<div class="spin"></div>Checking releases for ${esc(artist.name)}…`;
 
-  artistProgress.innerHTML = `<div class="spin"></div>Finding related artists in MusicBrainz…`;
+    let rels = mbCacheGet(artist.mbid);
+    if(!rels){
+      rels = await mbArtistReleases(artist.mbid, 4);
+      mbCacheSet(artist.mbid, rels);
+    }
+    for(const rel of rels) addCandidate(rel, artist.name);
+  }
 
-  for(const artist of shuffledBaseArtists){
-    const similar = await mbSimilarArtists(artist.mbid);
-    
-    // Shuffle the related artists so you don't get the same recommendations forever
-    const shuffledSimilar = similar.sort(() => 0.5 - Math.random()).slice(0, 4);
+  // Step 2: Also check name-match against already-loaded releases (covers non-MB artists)
+  const allFollowed = myArtists.map(a=>norm(a.name));
+  for(const rel of releases){
+    if(allFollowed.includes(norm(rel.artist))){
+      const artist = myArtists.find(a=>norm(a.name)===norm(rel.artist));
+      addCandidate(rel, artist?.name||rel.artist);
+    }
+  }
 
-    for(const sim of shuffledSimilar){
-      // 1. Check if we already have this related artist's new album in our massive Worker cache
-      const nameMatches = releases.filter(r=>norm(r.artist)===norm(sim.name));
-      for(const rel of nameMatches) {
-        addCandidate(rel, `Because you follow ${artist.name}`);
-      }
+  // Step 3: Fetch similar/related artists via MB relations, find their releases
+  if(mbArtists.length){
+    artistProgress.innerHTML = `<div class="spin"></div>Finding related artists via MusicBrainz…`;
+    for(const artist of mbArtists.slice(0,4)){
+      const similar = await mbSimilarArtists(artist.mbid);
+      for(const sim of similar){
+        // Check already-loaded releases first (instant, no API call)
+        const nameMatches = releases.filter(r=>norm(r.artist)===norm(sim.name));
+        for(const rel of nameMatches) addCandidate(rel, artist.name);
 
-      // 2. Also ask MusicBrainz directly if this related artist dropped an indie EP recently
-      if(sim.mbid && candidates.length < 40){
-        let simRels = mbCacheGet(sim.mbid);
-        if(!simRels){
-          simRels = await mbArtistReleases(sim.mbid, 3); // Only grab their 3 most recent
-          mbCacheSet(sim.mbid, simRels);
-        }
-        for(const rel of simRels) {
-          addCandidate(rel, `Because you follow ${artist.name}`);
+        // Also fetch directly from MB if they have an MBID and we have slots
+        if(sim.mbid && candidates.length < 30){
+          let simRels = mbCacheGet(sim.mbid);
+          if(!simRels){
+            simRels = await mbArtistReleases(sim.mbid, 3);
+            mbCacheSet(sim.mbid, simRels);
+          }
+          for(const rel of simRels) addCandidate(rel, artist.name);
         }
       }
     }
@@ -971,20 +1025,46 @@ async function buildRecs(){
     el.innerHTML = `<div class="empty">
       <div class="e-icon">◎</div>
       <div class="e-title">No new releases found</div>
-      <div class="e-sub">None of the artists related to your favorites have released anything in the past 4 weeks. Try following a few more bands!</div>
+      <div class="e-sub">None of your followed artists or their related artists have released anything in the past 4 weeks according to MusicBrainz. MusicBrainz can lag a few days for very new releases — check back soon.</div>
     </div>`;
     return;
   }
 
-  // Shuffle the final list of discovered albums and show the best 8
-  const finalPicks = candidates.sort(() => 0.5 - Math.random()).slice(0, 8);
-  
-  finalPicks.forEach(p => {
-    p.blurb = `Recommended based on your library's acoustic fingerprint and MusicBrainz relational data.`;
-  });
+  // Step 4: Ask Claude to pick and write editorial blurbs
+  artistProgress.innerHTML = `<div class="spin"></div>Asking Claude for editorial picks…`;
 
-  renderRecs(finalPicks);
+  const artistList = myArtists.map(a=>a.name).join(', ');
+  const relList = candidates.slice(0,20).map(r=>`"${r.title}" by ${r.artist} (${r.type}${r.genre?', '+r.genre:''}) [because: ${r.because}]`).join('\n');
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:1200,
+        messages:[{role:'user',content:
+          `You are the editorial recommendation engine for Wavelength, a music discovery app.\n\n` +
+          `User follows: ${artistList}\n\n` +
+          `Candidate releases (fetched from MusicBrainz, filtered by artist relations):\n${relList}\n\n` +
+          `Pick the 5 best recommendations. For each write:\n` +
+          `- "because": short phrase like "Because you follow [artist name]"\n` +
+          `- "blurb": one sharp editorial sentence — specific, evocative, written like a music critic. No clichés, no generic praise.\n\n` +
+          `Respond ONLY with valid JSON:\n[{"title":"...","artist":"...","because":"...","blurb":"..."}]`
+        }]
+      })
+    });
+    const data  = await res.json();
+    const picks = JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
+    const enriched = picks.map(p=>{
+      const m = candidates.find(c=>norm(c.title)===norm(p.title)&&norm(c.artist)===norm(p.artist));
+      return m ? {...m,...p} : null;
+    }).filter(Boolean);
+    renderRecs(enriched.length ? enriched : candidates.slice(0,5));
+  }catch{
+    renderRecs(candidates.slice(0,5));
+  }
 }
+
 function renderRecs(recs){
   const el=document.getElementById('recs-body');
   if(!recs.length){el.innerHTML=`<div class="empty"><div class="e-title">No picks this week</div></div>`;return;}
@@ -1015,11 +1095,14 @@ function toggleLibRec(id,btn){toggleLib(id);const inLib=library.some(x=>x.id===i
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
 function openSettings(){
   document.getElementById('in-worker').value=workerUrl;
+  document.getElementById('in-store').value=store;
   document.getElementById('ov-settings').classList.add('open');
 }
 function saveSettings(){
   workerUrl=document.getElementById('in-worker').value.trim().replace(/\/+$/,'');
+  store=document.getElementById('in-store').value;
   localStorage.setItem('wl_worker',workerUrl);
+  localStorage.setItem('wl_store',store);
   updatePills();closeOv('ov-settings');toast('Settings saved');
   loadBrowse(true);
 }
@@ -1051,52 +1134,9 @@ function toast(msg){
   t._t=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ─── MUSICBRAINZ API ─────────────────────────────────────────────────────────
-let mbQueue = Promise.resolve();
-function mbFetch(url) {
-  return new Promise(resolve => {
-    mbQueue = mbQueue.then(() => new Promise(r => setTimeout(r, 1100))).then(async () => {
-      try {
-        const res = await fetch(url, { headers: { 'Accept': 'application/json', 'User-Agent': 'Wavelength/1.0' } });
-        resolve(await res.json());
-      } catch { resolve(null); }
-    });
-  });
-}
-
-async function mbSearchArtist(query) {
-  const data = await mbFetch(`https://musicbrainz.org/ws/2/artist?query=artist:"${encodeURIComponent(query)}"&fmt=json`);
-  if (!data || !data.artists) return [];
-  return data.artists.map(a => ({
-    name: a.name, mbid: a.id, type: a.type, area: a.area?.name, disambiguation: a.disambiguation, tags: (a.tags || []).map(t => t.name)
-  }));
-}
-
-async function mbArtistReleases(mbid, limit=50) {
-  const data = await mbFetch(`https://musicbrainz.org/ws/2/release-group?artist=${mbid}&fmt=json&limit=${limit}`);
-  if (!data || !data['release-groups']) return [];
-  const out = [];
-  for (const rg of data['release-groups']) {
-    const dateRaw = rg['first-release-date'] || '';
-    out.push({
-      id: 'mb-' + rg.id, title: rg.title, artist: '', 
-      type: rg['primary-type'] === 'Album' ? 'Album' : (rg['primary-type'] === 'EP' ? 'EP' : 'Single'),
-      date: relDate(dateRaw), dateRaw: dateRaw, genre: null, score: null, source: 'mb',
-      img: `https://coverartarchive.org/release-group/${rg.id}/front-250`, url: `https://musicbrainz.org/release-group/${rg.id}`,
-      isNew: dateRaw ? (Date.now() - new Date(dateRaw + 'T00:00:00').getTime()) < 28 * 86400000 : false
-    });
-  }
-  return out;
-}
-
-async function mbSimilarArtists(mbid) {
-  const data = await mbFetch(`https://musicbrainz.org/ws/2/artist/${mbid}?inc=artist-rels&fmt=json`);
-  if (!data || !data.relations) return [];
-  return data.relations.filter(r => r['target-type'] === 'artist').map(r => ({ name: r.artist.name, mbid: r.artist.id }));
-}
-
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = '10';
+// Clear stale cache from older versions of the app
+const CACHE_VERSION = '7';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
