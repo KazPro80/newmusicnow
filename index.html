@@ -132,11 +132,9 @@ nav a.active{border-bottom-color:var(--ab);}
 .src-badge{position:absolute;top:8px;left:8px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.08em;padding:2px 5px;border-radius:2px;font-weight:500;z-index:3;}
 .sb-dz{background:rgba(162,88,232,0.18);color:#c07af8;border:1px solid rgba(162,88,232,0.25);}
 .sb-am{background:rgba(252,60,68,0.15);color:#fc6b72;border:1px solid rgba(252,60,68,0.2);}
-.sb-dc{background:rgba(58,123,213,0.2);color:var(--blue);border:1px solid rgba(58,123,213,0.25);}
 .sb-aoty{background:rgba(46,158,126,0.15);color:var(--teal);border:1px solid rgba(46,158,126,0.2);}
-.sb-mc{background:rgba(255,210,30,0.12);color:#c8a820;border:1px solid rgba(255,210,30,0.2);}
-.sb-alm{background:rgba(160,100,220,0.15);color:#c080ff;border:1px solid rgba(160,100,220,0.2);}
-.sb-pf{background:rgba(255,53,48,0.15);color:#ff3530;border:1px solid rgba(255,53,48,0.2);}
+.sb-rd{background:rgba(255,69,0,0.15);color:#ff5520;border:1px solid rgba(255,69,0,0.2);}
+.sb-oc{background:rgba(0,90,200,0.18);color:#5ba3ff;border:1px solid rgba(0,90,200,0.3);}
 .new-chip{position:absolute;top:8px;right:8px;background:var(--ab);color:#000;font-family:'DM Mono',monospace;font-size:8px;font-weight:500;padding:2px 5px;border-radius:3px;z-index:3;letter-spacing:0.04em;}
 .score-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;position:absolute;bottom:8px;right:8px;z-index:3;}
 .sg{background:#1a4a2e;color:#4caf7d;border:1px solid #2a6a3e;}
@@ -259,7 +257,8 @@ nav a.active{border-bottom-color:var(--ab);}
       <div class="pill on"  id="pill-dz"><span class="dot"></span>Deezer</div>
       <div class="pill"     id="pill-wk"><span class="dot"></span>Apple+More</div>
       <div class="pill on"  id="pill-mb"><span class="dot"></span>MusicBrainz</div>
-      <div class="pill"     id="pill-pf"><span class="dot"></span>Reddit</div>
+      <div class="pill"     id="pill-rd"><span class="dot"></span>Reddit</div>
+      <div class="pill"     id="pill-oc"><span class="dot"></span>Official Charts</div>
     </div>
     <button class="btn" onclick="openSettings()">⚙ Keys</button>
     <button class="btn btn-g" onclick="openArtistModal()">⊕ Add Artists</button>
@@ -298,13 +297,15 @@ nav a.active{border-bottom-color:var(--ab);}
       <div style="padding:0 0.5rem">
         <select id="src-select" class="fi" style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 10px;cursor:pointer;width:100%" onchange="setSrcDd(this.value)">
           <option value="all">All sources (<span id="cnt-all">—</span>)</option>
-          <option value="pf">Reddit & Indies</option>
+          <option value="oc">Official Charts</option>
+          <option value="rd">Reddit & Indies</option>
           <option value="dz">Deezer</option>
           <option value="am">Apple Music</option>
           <option value="aoty">Album of the Year</option>
         </select>
       </div>
-      <span id="cnt-pf" style="display:none">—</span>
+      <span id="cnt-oc" style="display:none">—</span>
+      <span id="cnt-rd" style="display:none">—</span>
       <span id="cnt-dz" style="display:none">—</span>
       <span id="cnt-am" style="display:none">—</span>
       <span id="cnt-aoty" style="display:none">—</span>
@@ -318,7 +319,6 @@ nav a.active{border-bottom-color:var(--ab);}
   </aside>
 
   <main class="main">
-
     <div id="tab-browse" class="tab-page active">
       <div class="pg-hdr">
         <div>
@@ -459,7 +459,8 @@ function updatePills(){
   setPill('pill-dz',true);
   setPill('pill-wk',!!workerUrl);
   setPill('pill-mb',true);
-  setPill('pill-pf',!!workerUrl);
+  setPill('pill-rd',!!workerUrl);
+  setPill('pill-oc',!!workerUrl);
 }
 function setPill(id,on){
   const el=document.getElementById(id);if(!el)return;
@@ -478,12 +479,13 @@ const SRC_BADGES={
   dz:  '<span class="src-badge sb-dz">DZ</span>',
   am:  '<span class="src-badge sb-am">AM</span>',
   aoty:'<span class="src-badge sb-aoty">AOTY</span>',
-  pf:  '<span class="src-badge sb-pf">PFORK</span>',
+  rd:  '<span class="src-badge sb-rd">REDDIT</span>',
+  oc:  '<span class="src-badge sb-oc">OC</span>',
 };
 
 // SVG Icons for Music Players
 const ICON_SPOTIFY = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.745 3.808-.87 7.076-.496 9.715 1.115.293.18.386.563.207.854zm1.214-2.71c-.226.366-.704.482-1.07.256-2.695-1.655-6.815-2.14-9.873-1.17-.413.13-8.58-.096-.988-.51-.13-.414.095-.857.51-.987 3.51-1.113 8.08-.57 11.176 1.334.367.226.483.704.257 1.07zm.106-2.836C14.73 9.014 8.544 8.785 4.98 9.87c-.496.15-1.01-.13-1.16-.626-.15-.495.13-1.01.626-1.16 4.14-1.265 10.97-1.01 14.765 1.242.443.264.587.842.324 1.285-.265.444-.843.588-1.286.325z"/>`;
-const ICON_APPLE   = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.36 13.91c-.48.24-.96.36-1.56.36-2.04 0-3.36-1.56-3.36-3.96v-3.72c0-.48.36-.84.84-.84h1.08c.48 0 .84.36.84.84v3.6c0 1.44.84 2.16 1.92 2.16.48 0 .84-.12 1.2-.24.36-.12.6-.6.48-1.08l-.24-1.08c-.12-.48-.6-.72-1.08-.48-.24.12-.48.24-.72.24-.36 0-.6-.24-.6-.6v-2.4c0-.48.36-.84.84-.84h1.08c.48 0 .84.36.84.84v3.6c0 .72-.48 1.44-1.56 1.92zM15 8.16c-.72 0-1.2-.48-1.2-1.2s.48-1.2 1.2-1.2 1.2.48 1.2 1.2-.48 1.2-1.2 1.2z"/>`;
+const ICON_APPLE   = `<path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.099-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/>`;
 const ICON_YOUTUBE = `<path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1.9 14.5v-9l7.7 4.5-7.7 4.5z"/>`;
 
 function card(rel){
@@ -531,11 +533,11 @@ function card(rel){
 function skels(n){return Array(n).fill(`<div class="skel"><div class="sk" style="width:100%;aspect-ratio:1"></div><div style="padding:12px 13px"><div class="sk" style="height:10px;width:75%;margin-bottom:8px"></div><div class="sk" style="height:10px;width:55%;margin-bottom:8px"></div><div class="sk" style="height:8px;width:40%"></div></div></div>`).join('');}
 
 // ─── BROWSER-SIDE CACHE ───────────────────────────────────────────────
-function mergeAll(pfR,amR,dzR,aotyR,mcR,almR){
+function mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR){
   const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
   const key=r=>norm(r.artist)+'|'+norm(r.title);
   const seen=new Set(),out=[];
-  for(const r of [...pfR,...amR,...dzR,...aotyR,...mcR,...almR]){
+  for(const r of [...rdR,...ocR,...amR,...dzR,...aotyR,...mcR,...almR]){
     const k=key(r);
     if(seen.has(k)){const ex=out.find(x=>key(x)===k);if(ex){if(!ex.img&&r.img)ex.img=r.img;if(!ex.score&&r.score)ex.score=r.score;if(!ex.blurb&&r.blurb)ex.blurb=r.blurb;}continue;}
     seen.add(k);out.push(r);
@@ -564,9 +566,10 @@ async function loadBrowse(force=false){
   showStatus(`<div class="st"><div class="spin"></div>Loading from cache…</div>`);
 
   try {
-    const [dzR, pfR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
+    const [dzR, rdR, ocR, amR, aotyR, mcR, almR, bcR] = await Promise.all([
       workerFetch('deezer'),
-      workerFetch('pitchfork'), 
+      workerFetch('reddit'), 
+      workerFetch('officialcharts'),
       workerFetch('applemusic'),
       workerFetch('aoty'),
       workerFetch('metacritic'),
@@ -574,9 +577,9 @@ async function loadBrowse(force=false){
       workerFetch('bandcamp')
     ]);
 
-    releases = mergeAll(pfR,amR,dzR,aotyR,mcR,almR);
+    releases = mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR);
     
-    const pfEditorial = pfR.filter(r => r.blurb).map(r => ({...r, type:'Editorial'})).slice(0, 4);
+    const pfEditorial = rdR.filter(r => r.blurb).map(r => ({...r, type:'Editorial'})).slice(0, 4);
     editorial = [...pfEditorial,...bcR,...almR];
 
     updateCounts();
@@ -584,7 +587,7 @@ async function loadBrowse(force=false){
     renderBrowse();
     renderEditorial();
 
-    const total=pfR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
+    const total=rdR.length+ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
     let st=`<div class="st"><div class="sdot dok"></div>${releases.length} releases`;
     if(total>releases.length)st+=` <span style="color:var(--c3)">(${total-releases.length} dupes merged)</span>`;
     st+=`</div>`;
@@ -638,7 +641,6 @@ function renderBrowse(){
   const sumEl=document.getElementById('rsum');
   const filtered=sortReleases(applyFilters(releases));
   
-  // Only show the Clear Filters button if user actually changed a filter
   const hasF=searchQ||typeF!=='all'||srcF!=='all'||genreF!=='all'||dateFrom!==''||dateTo!=='';
   
   if(!filtered.length){
@@ -662,7 +664,7 @@ function renderEditorial(){
   const strip=document.getElementById('ed-strip');
   if(!editorial||!editorial.length){sec.style.display='none';return;}
   sec.style.display='block';
-  const srcLabel={bc:'Bandcamp Daily',pf:'Reddit',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
+  const srcLabel={bc:'Bandcamp Daily',rd:'Reddit',aoty:'Album of the Year',mc:'Metacritic',alm:'AllMusic'};
   strip.innerHTML=editorial.map(item=>{
     const[g1,g2]=palFor(item.id||item.title);
     return`<div class="ed-card">
@@ -684,9 +686,10 @@ function showStatus(html){document.getElementById('status-bar').innerHTML=html;}
 
 function updateCounts(){
   const cnt=s=>releases.filter(r=>r.source===s).length;
-  const pfN=cnt('pf'), dzN=cnt('dz'), amN=cnt('am'), aotyN=cnt('aoty');
+  const ocN=cnt('oc'), rdN=cnt('rd'), dzN=cnt('dz'), amN=cnt('am'), aotyN=cnt('aoty');
   document.getElementById('cnt-all').textContent=releases.length;
-  document.getElementById('cnt-pf').textContent=pfN;
+  document.getElementById('cnt-oc').textContent=ocN;
+  document.getElementById('cnt-rd').textContent=rdN;
   document.getElementById('cnt-dz').textContent=dzN;
   document.getElementById('cnt-am').textContent=amN;
   document.getElementById('cnt-aoty').textContent=aotyN;
@@ -694,15 +697,15 @@ function updateCounts(){
   const dd=document.getElementById('src-select');
   if(dd){
     dd.options[0].text=`All sources (${releases.length})`;
-    dd.options[1].text=`Reddit & Indies${pfN?` (${pfN})`:''}`;
-    dd.options[2].text=`Deezer${dzN?` (${dzN})`:''}`;
-    dd.options[3].text=`Apple Music${amN?` (${amN})`:''}`;
-    dd.options[4].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
+    dd.options[1].text=`Official Charts${ocN?` (${ocN})`:''}`;
+    dd.options[2].text=`Reddit & Indies${rdN?` (${rdN})`:''}`;
+    dd.options[3].text=`Deezer${dzN?` (${dzN})`:''}`;
+    dd.options[4].text=`Apple Music${amN?` (${amN})`:''}`;
+    dd.options[5].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
   }
 }
 
 function buildGenreSidebar(){
-  // The base array ignores the current Genre filter so siblings don't disappear
   const base=releases.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
     if(srcF!=='all'&&r.source!==srcF)return false;
@@ -712,7 +715,6 @@ function buildGenreSidebar(){
   });
 
   const filteredTotal = base.length;
-  // Always render the 'All genres' reset button so the user is never trapped
   let h=`<div class="fp ${genreF==='all'?'on':''}" data-genre="all"><span class="fp-n">All genres</span><span class="fp-c">${filteredTotal}</span></div>`;
 
   const withGenre = base.filter(r => r.genre);
@@ -770,7 +772,6 @@ function setCustomDate(){
 }
 
 function initDatePicker(){
-  // Only set visually on load, wait for user to click to actually filter
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
   document.querySelector('#date-presets .tt[data-days="0"]').classList.add('on');
   dateFrom=''; dateTo='';
@@ -1112,7 +1113,7 @@ async function mbSimilarArtists(mbid) {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = '8';
+const CACHE_VERSION = '9';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
