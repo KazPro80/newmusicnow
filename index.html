@@ -943,7 +943,7 @@ async function buildRecs(){
   for(const artist of shuffledBaseArtists){
     const similar = await mbSimilarArtists(artist.mbid);
     
-    // Shuffle the related artists so you don't get the same 3 recommendations forever
+    // Shuffle the related artists so you don't get the same recommendations forever
     const shuffledSimilar = similar.sort(() => 0.5 - Math.random()).slice(0, 4);
 
     for(const sim of shuffledSimilar){
@@ -979,14 +979,12 @@ async function buildRecs(){
   // Shuffle the final list of discovered albums and show the best 8
   const finalPicks = candidates.sort(() => 0.5 - Math.random()).slice(0, 8);
   
-  // Add a generic blurb since we removed Claude AI
   finalPicks.forEach(p => {
     p.blurb = `Recommended based on your library's acoustic fingerprint and MusicBrainz relational data.`;
   });
 
   renderRecs(finalPicks);
 }
-
 function renderRecs(recs){
   const el=document.getElementById('recs-body');
   if(!recs.length){el.innerHTML=`<div class="empty"><div class="e-title">No picks this week</div></div>`;return;}
