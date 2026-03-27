@@ -1130,7 +1130,7 @@ function toast(msg){
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Clear stale cache from older versions of the app
-const CACHE_VERSION = '7';
+const CACHE_VERSION = '8';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
