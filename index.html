@@ -333,7 +333,7 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
         <span class="tt"    data-days="30" onclick="setDatePreset(30,this)">Month</span>
         <span class="tt"    data-days="0"  onclick="setDatePreset(0,this)">All time</span>
       </div>
-      <div id="custom-date-wrap" style="display:none;margin-top:6px;padding:0 0.5rem;display:flex;flex-direction:column;gap:4px;">
+      <div id="custom-date-wrap" style="display:none;margin-top:6px;padding:0 0.5rem;flex-direction:column;gap:4px;">
         <div style="display:flex;align-items:center;gap:6px;">
           <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0">FR</span>
           <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
