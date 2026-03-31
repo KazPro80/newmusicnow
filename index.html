@@ -240,6 +240,24 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:10px 16px;font-family:'DM Mono',monospace;font-size:11px;color:var(--c2);letter-spacing:0.06em;z-index:300;transform:translateY(60px);opacity:0;transition:all 0.25s;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast span{color:var(--ab);}
+
+/* ── Lens (intent filter) ─────────────────────────────── */
+.lens-list{display:flex;flex-direction:column;gap:2px;padding:0 0.25rem;}
+.lens{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:5px;cursor:pointer;transition:background 0.12s;border:1px solid transparent;}
+.lens:hover{background:var(--bg3);}
+.lens.on{background:var(--bg3);border-color:rgba(255,230,0,0.2);}
+.lens-icon{font-size:13px;color:var(--c3);width:16px;text-align:center;flex-shrink:0;transition:color 0.12s;}
+.lens-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--c2);flex:1;letter-spacing:0.03em;transition:color 0.12s;}
+.lens-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--c3);background:var(--bg4);padding:1px 7px;border-radius:10px;flex-shrink:0;}
+.lens.on .lens-icon,.lens.on .lens-label{color:var(--yellow);}
+.lens.on .lens-count{background:rgba(255,230,0,0.12);color:var(--yellow);}
+
+/* ── Source badges (intent-labeled) ──────────────────── */
+.src-badge{position:absolute;top:8px;left:8px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.06em;padding:2px 6px;border-radius:3px;font-weight:500;z-index:3;backdrop-filter:blur(4px);}
+.sb-charting{background:rgba(255,230,0,0.18);color:var(--yellow);border:1px solid rgba(255,230,0,0.3);}
+.sb-community{background:rgba(0,200,150,0.14);color:#00c896;border:1px solid rgba(0,200,150,0.25);}
+.sb-scored{background:rgba(100,180,255,0.14);color:#64b4ff;border:1px solid rgba(100,180,255,0.25);}
+.sb-new{background:rgba(255,255,255,0.08);color:var(--c2);border:1px solid rgba(255,255,255,0.12);}
 </style>
 </head>
 <body>
@@ -253,42 +271,50 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
     <a onclick="gotoTab('library',this)">Library</a>
   </nav>
   <div class="hdr-r">
-    <div class="pills">
-      <div class="pill on"  id="pill-dz"><span class="dot"></span>Deezer</div>
-      <div class="pill"     id="pill-wk"><span class="dot"></span>Apple+More</div>
-      <div class="pill on"  id="pill-mb"><span class="dot"></span>MusicBrainz</div>
-      <div class="pill"     id="pill-oc"><span class="dot"></span>Official Charts</div>
-      <div class="pill"     id="pill-rd"><span class="dot"></span>Reddit</div>
-    </div>
-    <button class="btn" onclick="openSettings()">⚙ Keys</button>
-    <button class="btn btn-g" onclick="openArtistModal()">⊕ Add Artists</button>
+    <div id="last-updated" style="font-family:'DM Mono',monospace;font-size:9px;color:var(--c3);letter-spacing:0.06em;white-space:nowrap;"></div>
+    <button class="btn" onclick="openArtistModal()">⊕ Follow Artists</button>
+    <button class="btn" onclick="openSettings()" style="padding:7px 10px;font-size:13px;">⚙</button>
   </div>
 </header>
 
 <div class="app">
   <aside class="sidebar">
+
+    <!-- BROWSE LENS — intent-based source filter -->
     <div>
-      <div class="sb-lbl">Date Range</div>
-      <div style="padding:0 0.5rem;display:flex;flex-direction:column;gap:6px;">
-        <div class="type-row" id="date-presets">
-          <span class="tt on" data-days="7"  onclick="setDatePreset(7,this)">This week</span>
-          <span class="tt"    data-days="14" onclick="setDatePreset(14,this)">2 weeks</span>
-          <span class="tt"    data-days="30" onclick="setDatePreset(30,this)">Month</span>
-          <span class="tt"    data-days="0"  onclick="setDatePreset(0,this)">All</span>
+      <div class="sb-lbl">Browse</div>
+      <div class="lens-list" id="lens-list">
+        <div class="lens on" data-lens="all" onclick="setLens('all',this)">
+          <span class="lens-icon">◈</span>
+          <span class="lens-label">Everything</span>
+          <span class="lens-count" id="lc-all">—</span>
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0;letter-spacing:0.05em">FR</span>
-            <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0;letter-spacing:0.05em">TO</span>
-            <input type="date" id="date-to" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
-          </div>
+        <div class="lens" data-lens="charting" onclick="setLens('charting',this)">
+          <span class="lens-icon">↑</span>
+          <span class="lens-label">Charting</span>
+          <span class="lens-count" id="lc-charting">—</span>
+        </div>
+        <div class="lens" data-lens="new" onclick="setLens('new',this)">
+          <span class="lens-icon">◎</span>
+          <span class="lens-label">New Releases</span>
+          <span class="lens-count" id="lc-new">—</span>
+        </div>
+        <div class="lens" data-lens="community" onclick="setLens('community',this)">
+          <span class="lens-icon">⬡</span>
+          <span class="lens-label">Community Picks</span>
+          <span class="lens-count" id="lc-community">—</span>
+        </div>
+        <div class="lens" data-lens="scored" onclick="setLens('scored',this)">
+          <span class="lens-icon">★</span>
+          <span class="lens-label">Critic Approved</span>
+          <span class="lens-count" id="lc-scored">—</span>
         </div>
       </div>
+    </div>
 
-      <div class="sb-lbl" style="margin-top:0.5rem">Release Type</div>
+    <!-- RELEASE TYPE -->
+    <div>
+      <div class="sb-lbl">Format</div>
       <div class="type-row">
         <span class="tt on" onclick="setType('all',this)">All</span>
         <span class="tt" onclick="setType('Album',this)">Albums</span>
@@ -297,32 +323,44 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
         <span class="tt" onclick="setType('Reissue',this)">Reissues</span>
       </div>
     </div>
+
+    <!-- DATE — This week default, collapsible advanced -->
     <div>
-      <div class="sb-lbl">Source</div>
-      <div style="padding:0 0.5rem">
-        <select id="src-select" class="fi" style="font-family:'DM Mono',monospace;font-size:11px;padding:6px 10px;cursor:pointer;width:100%" onchange="setSrcDd(this.value)">
-          <option value="all">All sources (<span id="cnt-all">—</span>)</option>
-          <option value="oc">Official Charts UK</option>
-          <option value="dz">Deezer</option>
-          <option value="am">Apple Music</option>
-          <option value="rd">Reddit</option>
-          <option value="aoty">Album of the Year</option>
-          <option value="mc">Metacritic</option>
-        </select>
+      <div class="sb-lbl">When</div>
+      <div class="type-row" id="date-presets">
+        <span class="tt on" data-days="7"  onclick="setDatePreset(7,this)">This week</span>
+        <span class="tt"    data-days="14" onclick="setDatePreset(14,this)">2 weeks</span>
+        <span class="tt"    data-days="30" onclick="setDatePreset(30,this)">Month</span>
+        <span class="tt"    data-days="0"  onclick="setDatePreset(0,this)">All time</span>
       </div>
-      <!-- hidden count spans still needed for updateCounts() -->
-      <span id="cnt-oc" style="display:none">—</span>
-      <span id="cnt-rd" style="display:none">—</span>
-      <span id="cnt-dz" style="display:none">—</span>
-      <span id="cnt-am" style="display:none">—</span>
-      <span id="cnt-aoty" style="display:none">—</span>
-      <span id="cnt-mc" style="display:none">—</span>
-      <span id="cnt-alm" style="display:none">—</span>
+      <div id="custom-date-wrap" style="display:none;margin-top:6px;padding:0 0.5rem;display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0">FR</span>
+          <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0">TO</span>
+          <input type="date" id="date-to" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
+        </div>
+      </div>
+      <button onclick="toggleCustomDate()" id="custom-date-toggle" style="background:none;border:none;color:var(--c3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.06em;cursor:pointer;padding:4px 0.5rem 0;text-transform:uppercase;">Custom range ▾</button>
     </div>
+
+    <!-- GENRE -->
     <div>
       <div class="sb-lbl">Genre</div>
       <div id="genre-sb"><div style="font-size:11px;color:var(--c3);padding:0 0.5rem;line-height:1.6">Loading…</div></div>
     </div>
+
+    <!-- hidden count spans for updateCounts() -->
+    <span id="cnt-all"   style="display:none">—</span>
+    <span id="cnt-oc"    style="display:none">—</span>
+    <span id="cnt-rd"    style="display:none">—</span>
+    <span id="cnt-dz"    style="display:none">—</span>
+    <span id="cnt-am"    style="display:none">—</span>
+    <span id="cnt-aoty"  style="display:none">—</span>
+    <span id="cnt-mc"    style="display:none">—</span>
+    <span id="cnt-alm"   style="display:none">—</span>
   </aside>
 
   <main class="main">
@@ -458,7 +496,7 @@ const safeJSON = (key, fallback) => { try{ return JSON.parse(localStorage.getIte
 let myArtists = safeJSON('wl_artists', []);
 let library   = safeJSON('wl_library',  []);
 let activeTab = 'browse';
-let typeF = 'all', srcF = 'all', genreF = 'all', searchQ = '';
+let typeF = 'all', srcF = 'all', lensF = 'all', genreF = 'all', searchQ = '';
 let dateFrom = '', dateTo = '';  // ISO strings e.g. '2026-03-14', empty = no filter
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -559,14 +597,13 @@ function scoreBadge(score){
 
 // ─── CARD RENDERER ───────────────────────────────────────────────────────────
 const SRC_BADGES={
-  dz:  '<span class="src-badge sb-dz">DZ</span>',
-  am:  '<span class="src-badge sb-am">AM</span>',
-  dc:  '<span class="src-badge sb-dc">VINYL</span>',
-  aoty:'<span class="src-badge sb-aoty">AOTY</span>',
-  mc:  '<span class="src-badge sb-mc">MC</span>',
-  alm: '<span class="src-badge sb-alm">ALM</span>',
-  oc:  '<span class="src-badge sb-oc">OC</span>',
-  rd:  '<span class="src-badge sb-rd">REDDIT</span>',
+  oc:  '<span class="src-badge sb-charting">↑ CHARTS</span>',
+  dz:  '<span class="src-badge sb-new">NEW</span>',
+  am:  '<span class="src-badge sb-new">NEW</span>',
+  rd:  '<span class="src-badge sb-community">⬡ PICKS</span>',
+  aoty:'<span class="src-badge sb-scored">★ CRITIC</span>',
+  mc:  '<span class="src-badge sb-scored">★ CRITIC</span>',
+  alm: '<span class="src-badge sb-scored">★ CRITIC</span>',
 };
 
 function card(rel){
@@ -630,6 +667,7 @@ async function loadBrowse(force=false){
   document.getElementById('ed-section').style.display='none';
   setDateLabel();
   showStatus(`<div class="st"><div class="spin"></div>Loading…</div>`);
+  document.getElementById('last-updated').textContent='';
 
   try{
     // All sources served from KV — fire all in parallel, all fast
@@ -662,6 +700,8 @@ async function loadBrowse(force=false){
     if(almR.length)sp.push(`${almR.length} AllMusic`);
     if(sp.length)st+=`<div class="st" style="margin-left:4px;color:var(--c3)">· ${sp.join(' · ')}</div>`;
     showStatus(st);
+    const lu=document.getElementById('last-updated');
+    if(lu){const now=new Date();lu.textContent=`Updated ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;}
   }catch(e){
     showStatus(`<div class="st" style="color:var(--red)">Error loading: ${e.message}</div>`);
   }
@@ -676,7 +716,11 @@ function applyFilters(list){
   const q=(searchQ||'').toLowerCase().trim();
   return list.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
-    if(srcF!=='all'&&r.source!==srcF)return false;
+    // Lens filter
+    if(lensF==='charting'&&r.source!=='oc')return false;
+    if(lensF==='new'&&r.source!=='dz'&&r.source!=='am')return false;
+    if(lensF==='community'&&r.source!=='rd')return false;
+    if(lensF==='scored'&&(!r.score||r.score<1))return false;
     if(genreF!=='all'&&r.genre!==genreF)return false;
     if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
     if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
@@ -697,7 +741,7 @@ function renderBrowse(){
   const body=document.getElementById('browse-body');
   const sumEl=document.getElementById('rsum');
   const filtered=sortReleases(applyFilters(releases));
-  const hasF=searchQ||typeF!=='all'||srcF!=='all'||genreF!=='all';
+  const hasF=searchQ||typeF!=='all'||lensF!=='all'||genreF!=='all'||dateFrom!==''||dateTo!=='';
   if(!filtered.length){
     sumEl.style.display='none';
     body.innerHTML=`<div class="empty"><div class="e-icon">◎</div><div class="e-title">Nothing matched</div><div class="e-sub">Try a different filter or search term.${searchQ?'<br><button class="btn" style="margin-top:8px" onclick="clearSearch()">Clear search</button>':''}</div></div>`;
@@ -733,34 +777,53 @@ function renderEditorial(){
 
 function showStatus(html){document.getElementById('status-bar').innerHTML=html;}
 
+function lensCount(lens){
+  if(lens==='all')return releases.length;
+  if(lens==='charting')return releases.filter(r=>r.source==='oc').length;
+  if(lens==='new')return releases.filter(r=>r.source==='dz'||r.source==='am').length;
+  if(lens==='community')return releases.filter(r=>r.source==='rd').length;
+  if(lens==='scored')return releases.filter(r=>r.score&&r.score>0).length;
+  return 0;
+}
+
 function updateCounts(){
+  // Update lens counts
+  ['all','charting','new','community','scored'].forEach(l=>{
+    const el=document.getElementById('lc-'+l);
+    if(el)el.textContent=lensCount(l);
+  });
+  // Hidden spans for legacy usage
   const cnt=s=>releases.filter(r=>r.source===s).length;
-  const ocN=cnt('oc'),rdN=cnt('rd'),dzN=cnt('dz'),amN=cnt('am'),aotyN=cnt('aoty'),mcN=cnt('mc');
-  document.getElementById('cnt-all').textContent=releases.length;
-  document.getElementById('cnt-oc').textContent=ocN;
-  document.getElementById('cnt-rd').textContent=rdN;
-  document.getElementById('cnt-dz').textContent=dzN;
-  document.getElementById('cnt-am').textContent=amN;
-  document.getElementById('cnt-aoty').textContent=aotyN;
-  document.getElementById('cnt-mc').textContent=mcN;
-  document.getElementById('cnt-alm').textContent=cnt('alm');
-  const dd=document.getElementById('src-select');
-  if(dd){
-    dd.options[0].text=`All sources (${releases.length})`;
-    dd.options[1].text=`Official Charts${ocN?` (${ocN})`:''}`;
-    dd.options[2].text=`Reddit${rdN?` (${rdN})`:''}`;
-    dd.options[3].text=`Deezer${dzN?` (${dzN})`:''}`;
-    dd.options[4].text=`Apple Music${amN?` (${amN})`:''}`;
-    dd.options[5].text=`Album of the Year${aotyN?` (${aotyN})`:''}`;
-    dd.options[6].text=`Metacritic${mcN?` (${mcN})`:''}`;
-  }
+  ['cnt-all','cnt-oc','cnt-rd','cnt-dz','cnt-am','cnt-aoty','cnt-mc','cnt-alm'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.textContent='';
+  });
+}
+
+function setLens(lens, el){
+  lensF=lens;
+  document.querySelectorAll('.lens').forEach(l=>l.classList.remove('on'));
+  el.classList.add('on');
+  buildGenreSidebar();
+  if(activeTab==='browse')renderBrowse();
+}
+
+function toggleCustomDate(){
+  const wrap=document.getElementById('custom-date-wrap');
+  const btn=document.getElementById('custom-date-toggle');
+  if(!wrap)return;
+  const open=wrap.style.display==='flex';
+  wrap.style.display=open?'none':'flex';
+  btn.textContent=open?'Custom range ▾':'Custom range ▴';
 }
 
 function buildGenreSidebar(){
   // Count genres from the already source+type filtered list so numbers match what you see
   const base=releases.filter(r=>{
     if(typeF!=='all'&&r.type!==typeF)return false;
-    if(srcF!=='all'&&r.source!==srcF)return false;
+    if(lensF==='charting'&&r.source!=='oc')return false;
+    if(lensF==='new'&&r.source!=='dz'&&r.source!=='am')return false;
+    if(lensF==='community'&&r.source!=='rd')return false;
+    if(lensF==='scored'&&(!r.score||r.score<1))return false;
     if(dateFrom&&r.dateRaw&&r.dateRaw<dateFrom)return false;
     if(dateTo&&r.dateRaw&&r.dateRaw>dateTo)return false;
     return r.genre;
@@ -785,12 +848,7 @@ function buildGenreSidebar(){
 function onSearch(v){searchQ=v;document.getElementById('s-clear').style.display=v?'block':'none';if(activeTab==='browse')renderBrowse();}
 function clearSearch(){searchQ='';document.getElementById('browse-q').value='';document.getElementById('s-clear').style.display='none';if(activeTab==='browse')renderBrowse();}
 function setType(v,el){typeF=v;document.querySelectorAll('.tt').forEach(t=>t.classList.remove('on'));el.classList.add('on');buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
-function setSrcDd(v){
-  srcF=v;
-  buildGenreSidebar();
-  if(activeTab==='browse')renderBrowse();
-}
-function setSrc(v,el){srcF=v;const dd=document.getElementById('src-select');if(dd)dd.value=v;buildGenreSidebar();if(activeTab==='browse')renderBrowse();}
+// setSrcDd/setSrc replaced by setLens
 
 function setDatePreset(days, el){
   document.querySelectorAll('#date-presets .tt').forEach(t=>t.classList.remove('on'));
@@ -826,6 +884,21 @@ function initDatePicker(){
   dateFrom = from.toISOString().slice(0,10);
   document.getElementById('date-from').value = dateFrom;
   document.getElementById('date-to').value   = dateTo;
+}
+
+function resetFilters(){
+  typeF='all';srcF='all';lensF='all';genreF='all';searchQ='';
+  document.querySelectorAll('.tt').forEach(t=>t.classList.remove('on'));
+  const thisWeek=document.querySelector('#date-presets .tt[data-days="7"]');
+  if(thisWeek)thisWeek.classList.add('on');
+  const allType=document.querySelector('#tab-browse .type-row .tt');
+  if(allType)allType.classList.add('on');
+  document.querySelectorAll('.lens').forEach(l=>l.classList.remove('on'));
+  const allLens=document.querySelector('.lens[data-lens="all"]');
+  if(allLens)allLens.classList.add('on');
+  const q=document.getElementById('browse-q');if(q)q.value='';
+  const sc=document.getElementById('s-clear');if(sc)sc.style.display='none';
+  initDatePicker();buildGenreSidebar();renderBrowse();
 }
 
 // ─── LIBRARY ─────────────────────────────────────────────────────────────────
@@ -1138,7 +1211,7 @@ function toast(msg){
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 // Clear stale cache from older versions of the app
-const CACHE_VERSION = '10';
+const CACHE_VERSION = '11';
 if(localStorage.getItem('wl_v') !== CACHE_VERSION){
   ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('wl_v', CACHE_VERSION);
