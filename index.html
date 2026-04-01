@@ -754,6 +754,8 @@ function renderBrowse(){
   const body=document.getElementById('browse-body');
   const sumEl=document.getElementById('rsum');
   const filtered=sortReleases(applyFilters(releases));
+  // Featured shows unless user has changed the lens or date — format/search filters still allowed
+  const suppressFeatured = lensF !== 'all' || dateCustomized;
   const hasF=searchQ||typeF!=='all'||lensF!=='all'||genreF!=='all'||dateCustomized;
   if(!filtered.length){
     sumEl.style.display='none';
@@ -763,9 +765,9 @@ function renderBrowse(){
   if(hasF){sumEl.style.display='block';sumEl.innerHTML=`Showing <strong>${filtered.length}</strong> of ${releases.length} releases${searchQ?` · "<strong>${esc(searchQ)}</strong>"`:''}`;}
   else sumEl.style.display='none';
 
-  // Split into featured + rest — only show featured section when unfiltered
-  const featured = !hasF ? filtered.filter(isFeatured) : [];
-  const rest = !hasF ? filtered.filter(r=>!isFeatured(r)) : filtered;
+  // Split into featured + rest — only suppress when user has changed lens or date
+  const featured = !suppressFeatured ? filtered.filter(isFeatured) : [];
+  const rest = !suppressFeatured ? filtered.filter(r=>!isFeatured(r)) : filtered;
 
   let html = '';
   if(featured.length){
