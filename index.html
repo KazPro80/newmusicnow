@@ -258,6 +258,11 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
 .sb-community{background:rgba(0,200,150,0.14);color:#00c896;border:1px solid rgba(0,200,150,0.25);}
 .sb-scored{background:rgba(100,180,255,0.14);color:#64b4ff;border:1px solid rgba(100,180,255,0.25);}
 .sb-new{background:rgba(255,255,255,0.08);color:var(--c2);border:1px solid rgba(255,255,255,0.12);}
+/* Featured section */
+.feat-hdr{display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--yellow);}
+.feat-hdr::after{content:'';flex:1;height:1px;background:rgba(255,230,0,0.15);}
+.feat-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--c3);background:var(--bg3);padding:1px 8px;border-radius:10px;letter-spacing:0.04em;}
+.feat-grid .card{border-color:rgba(255,230,0,0.08);}
 </style>
 </head>
 <body>
@@ -731,6 +736,17 @@ function sortReleases(list){
   return c; // already sorted newest-first
 }
 
+// A release is "featured" if it has multiple quality signals
+function isFeatured(r){
+  let score=0;
+  if(r.source==='oc')score+=2;           // Official Charts = explicitly curated
+  if(r.source==='rd')score+=1;           // Community flagged
+  if(r.score&&r.score>=70)score+=2;      // Strong critic score
+  if(r.score&&r.score>=85)score+=1;      // Exceptional critic score (bonus)
+  if(r.isNew)score+=1;                   // Just dropped
+  return score>=2;
+}
+
 function renderBrowse(){
   const body=document.getElementById('browse-body');
   const sumEl=document.getElementById('rsum');
@@ -743,7 +759,23 @@ function renderBrowse(){
   }
   if(hasF){sumEl.style.display='block';sumEl.innerHTML=`Showing <strong>${filtered.length}</strong> of ${releases.length} releases${searchQ?` · "<strong>${esc(searchQ)}</strong>"`:''}`;}
   else sumEl.style.display='none';
-  body.innerHTML=`<div class="grid">${filtered.map(card).join('')}</div>`;
+
+  // Split into featured + rest — only show featured section when unfiltered
+  const featured = !hasF ? filtered.filter(isFeatured) : [];
+  const rest = !hasF ? filtered.filter(r=>!isFeatured(r)) : filtered;
+
+  let html = '';
+  if(featured.length){
+    html += `<div class="feat-hdr"><span>Featured this week</span><span class="feat-count">${featured.length}</span></div>`;
+    html += `<div class="grid feat-grid">${featured.map(card).join('')}</div>`;
+    if(rest.length){
+      html += `<div class="feat-hdr" style="margin-top:1.5rem"><span>Everything else</span><span class="feat-count">${rest.length}</span></div>`;
+      html += `<div class="grid">${rest.map(card).join('')}</div>`;
+    }
+  } else {
+    html = `<div class="grid">${rest.map(card).join('')}</div>`;
+  }
+  body.innerHTML = html;
 }
 
 function renderEditorial(){
