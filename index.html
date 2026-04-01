@@ -1233,18 +1233,29 @@ function toast(msg){
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-// Clear stale cache from older versions of the app
-const CACHE_VERSION = '11';
-if(localStorage.getItem('wl_v') !== CACHE_VERSION){
-  ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
-  localStorage.setItem('wl_v', CACHE_VERSION);
-  mbReleasesCache = {};
+window.onerror = (msg, src, line, col, err) => {
+  console.error('KazPicks error:', msg, 'line', line, err);
+  const sb = document.getElementById('status-bar');
+  if(sb) sb.innerHTML = `<div class="st" style="color:var(--red)">JS Error line ${line}: ${msg} — check console</div>`;
+};
+
+try {
+  const CACHE_VERSION = '11';
+  if(localStorage.getItem('wl_v') !== CACHE_VERSION){
+    ['wl_mb_cache','wl_dc'].forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem('wl_v', CACHE_VERSION);
+    mbReleasesCache = {};
+  }
+  updatePills();
+  initDatePicker();
+  document.getElementById('lib-count').textContent=library.length;
+  loadBrowse();
+  renderArtists();
+} catch(e) {
+  console.error('Init error:', e);
+  const sb = document.getElementById('status-bar');
+  if(sb) sb.innerHTML = `<div class="st" style="color:var(--red)">Init error: ${e.message} — check console (F12)</div>`;
 }
-updatePills();
-initDatePicker();
-document.getElementById('lib-count').textContent=library.length;
-loadBrowse();
-renderArtists();
 </script>
 </body>
 </html>
