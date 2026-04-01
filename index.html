@@ -334,14 +334,8 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
         <span class="tt"    data-days="0"  onclick="setDatePreset(0,this)">All time</span>
       </div>
       <div id="custom-date-wrap" style="display:none;margin-top:6px;padding:0 0.5rem;flex-direction:column;gap:4px;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0">FR</span>
-          <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="font-family:'DM Mono',monospace;font-size:8px;color:var(--c3);width:18px;flex-shrink:0">TO</span>
-          <input type="date" id="date-to" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
-        </div>
+        <input type="date" id="date-from" class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
+        <input type="date" id="date-to"   class="fi" style="font-family:'DM Mono',monospace;font-size:10px;padding:4px 6px;width:100%;cursor:pointer" onchange="setCustomDate()">
       </div>
       <button onclick="toggleCustomDate()" id="custom-date-toggle" style="background:none;border:none;color:var(--c3);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.06em;cursor:pointer;padding:4px 0.5rem 0;text-transform:uppercase;">Custom range ▾</button>
     </div>
@@ -1105,46 +1099,36 @@ async function buildRecs(){
     return;
   }
 
-  // Step 4: Ask Claude to pick and write editorial blurbs
-  artistProgress.innerHTML = `<div class="spin"></div>Asking Claude for editorial picks…`;
+  // Step 4: Filter out releases by artists you already follow — recommendations only
+  const followedNorms = new Set(myArtists.map(a=>norm(a.name)));
+  const recommendations = candidates.filter(r => !followedNorms.has(norm(r.artist)));
 
-  const artistList = myArtists.map(a=>a.name).join(', ');
-  const relList = candidates.slice(0,20).map(r=>`"${r.title}" by ${r.artist} (${r.type}${r.genre?', '+r.genre:''}) [because: ${r.because}]`).join('\n');
-
-  try{
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:1200,
-        messages:[{role:'user',content:
-          `You are the editorial recommendation engine for Wavelength, a music discovery app.\n\n` +
-          `User follows: ${artistList}\n\n` +
-          `Candidate releases (fetched from MusicBrainz, filtered by artist relations):\n${relList}\n\n` +
-          `Pick the 5 best recommendations. For each write:\n` +
-          `- "because": short phrase like "Because you follow [artist name]"\n` +
-          `- "blurb": one sharp editorial sentence — specific, evocative, written like a music critic. No clichés, no generic praise.\n\n` +
-          `Respond ONLY with valid JSON:\n[{"title":"...","artist":"...","because":"...","blurb":"..."}]`
-        }]
-      })
-    });
-    const data  = await res.json();
-    const picks = JSON.parse(data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim());
-    const enriched = picks.map(p=>{
-      const m = candidates.find(c=>norm(c.title)===norm(p.title)&&norm(c.artist)===norm(p.artist));
-      return m ? {...m,...p} : null;
-    }).filter(Boolean);
-    renderRecs(enriched.length ? enriched : candidates.slice(0,5));
-  }catch{
-    renderRecs(candidates.slice(0,5));
+  if(!recommendations.length && candidates.length){
+    // All candidates were by followed artists — show them anyway with a note
+    renderRecs(candidates.slice(0,8), true);
+    return;
   }
+
+  if(!recommendations.length){
+    el.innerHTML = `<div class="empty">
+      <div class="e-icon">◎</div>
+      <div class="e-title">No recommendations yet</div>
+      <div class="e-sub">MusicBrainz didn't find related artists with recent releases. Try following a few more artists — the more you follow, the better the suggestions.</div>
+    </div>`;
+    return;
+  }
+
+  // Shuffle so you get different picks each time, then take top 8
+  const shuffled = recommendations.sort(()=>0.5-Math.random()).slice(0,8);
+  renderRecs(shuffled);
 }
 
-function renderRecs(recs){
+function renderRecs(recs, followedOnly=false){
   const el=document.getElementById('recs-body');
   if(!recs.length){el.innerHTML=`<div class="empty"><div class="e-title">No picks this week</div></div>`;return;}
   const inLib=id=>library.some(x=>x.id===id);
-  el.innerHTML=`<div class="recs">${recs.map(r=>{
+  const note=followedOnly?`<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--c3);padding:0 0 1rem;letter-spacing:0.05em">Showing your followed artists — follow more to get recommendations for similar artists.</div>`:'';
+  el.innerHTML=note+`<div class="recs">${recs.map(r=>{
     const[g1,g2]=palFor(r.id);
     return`<div class="rec-card">
       <div class="rec-art">
