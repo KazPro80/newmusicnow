@@ -263,6 +263,20 @@ nav a.active{border-bottom-color:var(--yellow);color:#fff;}
 .feat-hdr::after{content:'';flex:1;height:1px;background:rgba(255,230,0,0.15);}
 .feat-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--c3);background:var(--bg3);padding:1px 8px;border-radius:10px;letter-spacing:0.04em;}
 .feat-grid .card{border-color:rgba(255,230,0,0.08);}
+/* "Why this?" reason line on each card */
+.ci-reason{font-family:'DM Mono',monospace;font-size:10px;color:var(--c3);line-height:1.3;margin:6px 0 8px;display:flex;align-items:center;gap:5px;letter-spacing:0.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-reason-icon{flex-shrink:0;font-size:11px;}
+.ci-reason-followed{color:var(--yellow);}
+.ci-reason-followed .ci-reason-icon{color:var(--yellow);}
+.ci-reason-critic{color:#64b4ff;}
+.ci-reason-critic .ci-reason-icon{color:#64b4ff;}
+.ci-reason-community{color:#00c896;}
+.ci-reason-community .ci-reason-icon{color:#00c896;}
+.ci-reason-charting{color:var(--yellow);opacity:0.85;}
+.ci-reason-charting .ci-reason-icon{color:var(--yellow);}
+.ci-reason-editorial{color:#c89aff;}
+.ci-reason-editorial .ci-reason-icon{color:#c89aff;}
+.ci-reason-new{color:var(--c2);}
 </style>
 </head>
 <body>
@@ -605,6 +619,67 @@ const SRC_BADGES={
   alm: '<span class="src-badge sb-scored">★ CRITIC</span>',
 };
 
+// ─── REASON ENGINE — "Why is this here?" ─────────────────────────────────────
+// Returns the most compelling reason a release is in the feed, prioritized by signal strength
+function reasonFor(rel){
+  // 1. By an artist you follow (strongest personal signal)
+  const followedNames = myArtists.map(a=>(a.name||'').toLowerCase());
+  if(followedNames.includes((rel.artist||'').toLowerCase())){
+    return { text: `By ${rel.artist} (followed)`, kind: 'followed' };
+  }
+
+  // 2. Strong critic score
+  if(rel.score && rel.score >= 85){
+    return { text: `Critically acclaimed (${rel.score})`, kind: 'critic' };
+  }
+  if(rel.score && rel.score >= 70){
+    return { text: `Well reviewed (${rel.score})`, kind: 'critic' };
+  }
+
+  // 3. Reddit community pick — extract subreddit from blurb
+  if(rel.source === 'rd'){
+    const sub = rel.blurb?.match(/r\/(\w+)/);
+    if(sub) return { text: `Trending on r/${sub[1]}`, kind: 'community' };
+    return { text: 'Reddit community pick', kind: 'community' };
+  }
+
+  // 4. Charting
+  if(rel.source === 'oc'){
+    return { text: 'Currently charting', kind: 'charting' };
+  }
+
+  // 5. AOTY editorial
+  if(rel.source === 'aoty'){
+    return { text: 'Album of the Year pick', kind: 'editorial' };
+  }
+
+  // 6. Just dropped — only useful as a reason if it's also from a curated source
+  if(rel.isNew && (rel.source === 'aoty' || rel.source === 'mc')){
+    return { text: 'Just released', kind: 'new' };
+  }
+
+  // 7. Genre + new (mild signal but better than nothing)
+  if(rel.isNew && rel.genre){
+    return { text: `New ${rel.genre.toLowerCase()} release`, kind: 'new' };
+  }
+
+  return null; // No notable reason — leave blank
+}
+
+function reasonHtml(rel){
+  const r = reasonFor(rel);
+  if(!r) return '';
+  const icon = {
+    followed:  '◉',
+    critic:    '★',
+    community: '⬡',
+    charting:  '↑',
+    editorial: '✦',
+    new:       '◎',
+  }[r.kind] || '·';
+  return `<div class="ci-reason ci-reason-${r.kind}"><span class="ci-reason-icon">${icon}</span>${esc(r.text)}</div>`;
+}
+
 function card(rel){
   const inLib=library.some(x=>x.id===rel.id);
   const[g1,g2]=palFor(rel.id);
@@ -635,6 +710,7 @@ function card(rel){
     <div class="ci-info">
       <div class="ci-title">${esc(rel.title)}</div>
       <div class="ci-artist">${esc(rel.artist)}</div>
+      ${reasonHtml(rel)}
       <div class="ci-meta">
         <span class="rtype ${tc}">${rel.type||'Other'}</span>
         ${rel.genre?`<span class="rtype rt-other" style="font-size:8px;opacity:0.8">${esc(rel.genre)}</span>`:''}
