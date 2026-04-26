@@ -3,10 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KazPicks — Boutique</title>
+<title>KazPicks — A Weekly Bulletin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700;900&family=Courier+Prime:wght@400;700&family=Caveat:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<script>
+const CONFIG = {
+  WORKER_URL: 'https://broken-river-2a46.kazpro527.workers.dev',
+  STORE: 'us',
+};
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -635,6 +641,69 @@ footer b{color:var(--ink);}
   .pick-card{grid-template-columns:96px 1fr;}
   .pick-card .body{padding:12px;}
 }
+
+/* ── Additional UI elements (modals, toasts, skeletons) ─────────── */
+.overlay{position:fixed;inset:0;background:rgba(32,24,15,0.65);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:32px 28px;width:480px;max-width:90vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(32,24,15,0.4);transform:translateY(12px);transition:transform 0.2s;position:relative;}
+.overlay.open .modal{transform:translateY(0);}
+.m-close{position:absolute;top:14px;right:14px;background:transparent;border:none;color:var(--ink-soft);font-size:18px;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
+.m-close:hover{background:var(--paper-2);color:var(--ink);}
+.m-title{font-family:'Roboto Slab',serif;font-weight:900;font-size:24px;color:var(--ink);margin-bottom:6px;letter-spacing:-0.01em;}
+.m-sub{font-family:'Roboto Slab',serif;font-size:13px;color:var(--ink-soft);margin-bottom:20px;line-height:1.5;}
+.fg{margin-bottom:18px;}
+.fl{font-family:'Courier Prime',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.fl a{color:var(--terra);text-decoration:none;font-size:10px;}
+.fl a:hover{color:var(--terra-deep);}
+.fi{width:100%;background:#fff;border:1px solid var(--rule);border-radius:4px;padding:10px 12px;color:var(--ink);font-family:'Courier Prime',monospace;font-size:13px;outline:none;transition:border-color 0.15s;}
+.fi:focus{border-color:var(--terra);}
+.fi::placeholder{color:var(--ink-faint);}
+.fh{font-family:'Roboto Slab',serif;font-size:12px;color:var(--ink-soft);margin-top:5px;line-height:1.4;}
+.results-box{max-height:280px;overflow-y:auto;}
+.sr-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:4px;cursor:default;transition:background 0.1s;}
+.sr-item:hover{background:var(--paper-2);}
+.sr-av{width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Roboto Slab',serif;font-weight:900;color:rgba(255,255,255,0.4);font-size:14px;flex-shrink:0;}
+.sr-name{font-family:'Roboto Slab',serif;font-weight:700;font-size:14px;color:var(--ink);}
+.sr-meta{font-family:'Courier Prime',monospace;font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.05em;}
+.sr-add{margin-left:auto;font-family:'Courier Prime',monospace;font-size:10px;color:var(--paper);background:var(--terra);border:none;padding:6px 12px;border-radius:4px;cursor:pointer;text-transform:uppercase;letter-spacing:0.07em;font-weight:700;}
+.sr-add:hover{background:var(--terra-deep);}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:var(--paper);border-radius:6px;padding:12px 18px;font-family:'Courier Prime',monospace;font-size:12px;letter-spacing:0.05em;z-index:700;transform:translateY(70px);opacity:0;transition:all 0.25s;box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast b{color:var(--yellow);}
+.spin{width:14px;height:14px;border:2px solid var(--rule);border-top-color:var(--terra);border-radius:50%;animation:rot 0.8s linear infinite;flex-shrink:0;display:inline-block;vertical-align:middle;}
+@keyframes rot{to{transform:rotate(360deg);}}
+.lr{display:flex;align-items:center;gap:10px;color:var(--ink-soft);font-family:'Courier Prime',monospace;font-size:12px;padding:1.5rem;}
+.empty{text-align:center;padding:3rem 2rem;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.e-title{font-family:'Roboto Slab',serif;font-weight:900;font-size:22px;color:var(--ink);}
+.e-sub{font-family:'Roboto Slab',serif;font-size:13px;color:var(--ink-soft);max-width:340px;line-height:1.5;}
+/* skeleton loaders */
+.skel-row{display:grid;grid-template-columns:120px 1fr auto;gap:24px;padding:20px 4px;border-bottom:1px solid var(--rule);}
+.skel-art{width:120px;height:120px;border-radius:6px;background:var(--paper-2);}
+.skel-line{height:14px;background:var(--paper-2);border-radius:4px;margin-bottom:8px;}
+.skel-line.short{width:40%;}
+.skel-line.med{width:65%;}
+.skel-pulse{animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* Hide all tabs except active */
+.tab-page{display:none;}
+.tab-page.active{display:block;}
+
+/* Adjust hero for non-browse tabs */
+.tab-page:not(#tab-browse) .hero{display:none;}
+.tab-page:not(#tab-browse) .toolbar{display:none;}
+
+/* For You / artist row visualization */
+.recs{display:flex;flex-direction:column;gap:0;}
+.row-item.rec .row-blurb{font-style:italic;}
+
+/* Action button styles for streaming */
+.row-actions .act svg{width:16px;height:16px;}
+.row-actions .act.in-lib{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+/* Genre sidebar links */
+.tag.matches{background:var(--paper-deep);}
+
 </style>
 </head>
 <body>
@@ -645,36 +714,29 @@ footer b{color:var(--ink);}
 <header class="masthead">
   <button class="hamb" onclick="openDrawer()" aria-label="Filters"><span></span><span></span><span></span></button>
 
-  <div class="brand">
+  <div class="brand" onclick="resetFilters()" style="cursor:pointer">
     <div class="brand-mark"><span class="dot"></span>KazPicks</div>
     <div class="brand-tag">A weekly bulletin · est. 2026</div>
   </div>
 
   <nav class="dnav">
-    <a class="on">Browse</a>
-    <a>For You</a>
-    <a>Artists</a>
-    <a>Library</a>
+    <a class="on" onclick="gotoTab('browse',this)">Browse</a>
+    <a onclick="gotoTab('foryou',this)">For You</a>
+    <a onclick="gotoTab('myartists',this)">Artists</a>
+    <a onclick="gotoTab('library',this)">Library</a>
   </nav>
 
-  <div class="issue">
-    <b>Vol III · No 17</b><br>
-    Apr 26 · 142 records
+  <div class="issue" id="issue-meta">
+    <b id="issue-date"></b><br>
+    <span id="issue-count">— records</span>
   </div>
 
   <div class="hdr-tools">
-    <button class="tool-btn editor" id="editor-toggle" onclick="toggleEditor()">✎ Editor</button>
-    <button class="tool-btn">⊕ Follow</button>
-    <button class="tool-btn solid">Library · 24</button>
+    <button class="tool-btn" onclick="openArtistModal()">⊕ Follow</button>
+    <button class="tool-btn solid" onclick="gotoTab('library',document.querySelectorAll('.dnav a')[3])">Library · <span id="lib-count">0</span></button>
+    <button class="tool-btn" onclick="openSettings()" title="Settings">⚙</button>
   </div>
 </header>
-
-<div class="edit-banner">
-  <span>✎ <b>Editor mode</b> — click the note to rewrite it · click ⊕ on any record to pin it to the Wall</span>
-  <span class="spacer"></span>
-  <button onclick="resetWall()">Reset wall</button>
-  <button onclick="toggleEditor()" style="background:var(--terra)">Done</button>
-</div>
 
 <div class="app">
 
@@ -682,116 +744,155 @@ footer b{color:var(--ink);}
   <aside class="sidebar">
     <div>
       <div class="sb-h">Browse by</div>
-      <div class="lens-list">
-        <div class="lens on"><span class="lens-i">◈</span><span class="lens-l">Everything</span><span class="lens-c">142</span></div>
-        <div class="lens"><span class="lens-i">↑</span><span class="lens-l">Charting</span><span class="lens-c">38</span></div>
-        <div class="lens"><span class="lens-i">◎</span><span class="lens-l">New Releases</span><span class="lens-c">61</span></div>
-        <div class="lens"><span class="lens-i">⬡</span><span class="lens-l">Community</span><span class="lens-c">29</span></div>
-        <div class="lens"><span class="lens-i">★</span><span class="lens-l">Critic Approved</span><span class="lens-c">22</span></div>
+      <div class="lens-list" id="lens-list">
+        <div class="lens on" data-lens="all" onclick="setLens('all',this)"><span class="lens-i">◈</span><span class="lens-l">Everything</span><span class="lens-c" id="lc-all">—</span></div>
+        <div class="lens" data-lens="charting" onclick="setLens('charting',this)"><span class="lens-i">↑</span><span class="lens-l">Charting</span><span class="lens-c" id="lc-charting">—</span></div>
+        <div class="lens" data-lens="new" onclick="setLens('new',this)"><span class="lens-i">◎</span><span class="lens-l">New Releases</span><span class="lens-c" id="lc-new">—</span></div>
+        <div class="lens" data-lens="community" onclick="setLens('community',this)"><span class="lens-i">⬡</span><span class="lens-l">Community</span><span class="lens-c" id="lc-community">—</span></div>
+        <div class="lens" data-lens="scored" onclick="setLens('scored',this)"><span class="lens-i">★</span><span class="lens-l">Critic Approved</span><span class="lens-c" id="lc-scored">—</span></div>
       </div>
     </div>
 
     <div>
       <div class="sb-h">Format</div>
-      <div class="tag-row">
-        <span class="tag on">All</span>
-        <span class="tag">Albums</span>
-        <span class="tag">Singles</span>
-        <span class="tag">Vinyl</span>
-        <span class="tag">Reissues</span>
+      <div class="tag-row" id="format-tags">
+        <span class="tag on" data-type="all" onclick="setType('all',this)">All</span>
+        <span class="tag" data-type="Album" onclick="setType('Album',this)">Albums</span>
+        <span class="tag" data-type="Single" onclick="setType('Single',this)">Singles</span>
+        <span class="tag" data-type="Vinyl" onclick="setType('Vinyl',this)">Vinyl</span>
+        <span class="tag" data-type="Reissue" onclick="setType('Reissue',this)">Reissues</span>
       </div>
     </div>
 
     <div>
       <div class="sb-h">When</div>
-      <div class="tag-row">
-        <span class="tag yellow on">This week</span>
-        <span class="tag">2 weeks</span>
-        <span class="tag">Month</span>
-        <span class="tag">All time</span>
+      <div class="tag-row" id="date-presets">
+        <span class="tag yellow on" data-days="7"  onclick="setDatePreset(7,this)">This week</span>
+        <span class="tag" data-days="14" onclick="setDatePreset(14,this)">2 weeks</span>
+        <span class="tag" data-days="30" onclick="setDatePreset(30,this)">Month</span>
+        <span class="tag" data-days="0"  onclick="setDatePreset(0,this)">All time</span>
       </div>
     </div>
 
     <div>
       <div class="sb-h">Genre</div>
-      <div class="tag-row">
-        <span class="tag">Indie</span>
-        <span class="tag">Rock</span>
-        <span class="tag">Hip-Hop</span>
-        <span class="tag">Electronic</span>
-        <span class="tag">Jazz</span>
-        <span class="tag">Folk</span>
-        <span class="tag">Soul</span>
-        <span class="tag">Ambient</span>
-        <span class="tag">Country</span>
-      </div>
+      <div class="tag-row" id="genre-sb"><span class="tag" style="opacity:0.5">Loading…</span></div>
     </div>
   </aside>
 
   <!-- Main -->
   <main class="main">
 
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-l">
-        <h1>This week, <em>in records</em>.</h1>
-        <p class="lede">142 new releases pulled from the bins, sorted, and pinned to the wall — the ones we can't stop playing are up top.</p>
-        <div class="meta">
-          <span><b>Apr 26, 2026</b></span>
-          <span>refreshed 6 min ago</span>
-          <span>5 staff picks</span>
+    <!-- BROWSE -->
+    <div id="tab-browse" class="tab-page active">
+      <section class="hero">
+        <div class="hero-l">
+          <h1>This week, <em>in records</em>.</h1>
+          <p class="lede" id="hero-lede">New releases pulled from the bins, sorted, and pinned to the wall — the ones we can't stop playing are up top.</p>
+          <div class="meta">
+            <span><b id="hero-date"></b></span>
+            <span id="hero-updated">refreshed —</span>
+            <span id="hero-source-count"></span>
+          </div>
+        </div>
+
+        <div class="hero-r">
+          <div class="stamp">Editor's Note</div>
+          <div class="label">— from the desk —</div>
+          <h3>The week in <em>new music</em>.</h3>
+          <p>Eight sources scanned. Charts, critics, communities, the new release feeds — all merged, deduped, and sorted by what's worth your time. Pinned picks at the top, the full stack below.</p>
+          <div class="signed">— love, <b>the Kaz</b></div>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="search">
+          <span class="search-i">⌕</span>
+          <input id="browse-q" placeholder="Search releases, artists, genres…" oninput="onSearch(this.value)" autocomplete="off">
+        </div>
+        <select class="sort" id="sort-sel" onchange="renderBrowse()">
+          <option value="release">Newest first</option>
+          <option value="alpha">A → Z</option>
+          <option value="artist">By artist</option>
+        </select>
+        <button class="tool-btn" onclick="loadBrowse(true)" style="padding:10px 14px">↻ Refresh</button>
+      </div>
+
+      <div id="status-bar" style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:16px;min-height:18px;letter-spacing:0.04em;"></div>
+
+      <!-- Wall (featured) -->
+      <div id="wall-section" style="display:none">
+        <div class="sec-h">
+          <div class="ttl">This week's <em>wall</em></div>
+          <div class="count" id="wall-count">3 hand-picked · refreshed Sundays</div>
+        </div>
+        <div class="wall" id="wall"></div>
+      </div>
+
+      <!-- The Stacks -->
+      <div class="sec-h" style="margin-top:8px">
+        <div class="ttl">The <em>stacks</em></div>
+        <div class="count" id="stacks-count">— records · sorted newest first</div>
+      </div>
+
+      <div class="list" id="list-body"></div>
+
+      <footer>
+        <div>© 2026 KazPicks · Independent · <b>Made for music nerds</b></div>
+        <div id="vol-meta">Vol III · Issue —</div>
+      </footer>
+    </div>
+
+    <!-- FOR YOU -->
+    <div id="tab-foryou" class="tab-page">
+      <div class="sec-h">
+        <div class="ttl">For <em>you</em></div>
+        <div class="count">Recommendations based on artists you follow</div>
+      </div>
+      <div id="recs-body">
+        <div class="empty">
+          <div class="e-title">Add some artists first</div>
+          <div class="e-sub">Follow artists you love and we'll surface new releases by related acts you might've missed.</div>
+          <button class="tool-btn solid" style="margin-top:12px" onclick="openArtistModal()">⊕ Follow Artists</button>
         </div>
       </div>
+    </div>
 
-      <div class="hero-r" id="hero-r">
-        <div class="stamp">Editor's Note</div>
-        <div class="label">— from the desk —</div>
-        <h3 contenteditable="false" data-key="head" id="ed-head">Big week for the <em>weirdos</em>.</h3>
-        <p contenteditable="false" data-key="body" id="ed-body">Three records worth flipping the sleeve over: a midwest emo revival, a Brazilian psych reissue we've been hunting for years, and an ambient drone EP that empties the room in a good way.</p>
-        <div class="signed">— love, <b contenteditable="false" data-key="sig" id="ed-sig">the Kaz</b></div>
+    <!-- MY ARTISTS -->
+    <div id="tab-myartists" class="tab-page">
+      <div class="sec-h">
+        <div class="ttl">My <em>artists</em></div>
+        <div class="count"><span id="artist-count">0</span> followed · new releases flagged automatically</div>
       </div>
-    </section>
-
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <div class="search">
-        <span class="search-i">⌕</span>
-        <input placeholder="Search releases, artists, genres…">
+      <div id="artists-body"></div>
+      <div id="artist-rel-sec" style="display:none;margin-top:24px">
+        <div class="sec-h">
+          <div class="ttl">New from your <em>artists</em></div>
+        </div>
+        <div class="list" id="artist-rel-grid"></div>
       </div>
-      <select class="sort">
-        <option>Newest first</option>
-        <option>A → Z</option>
-        <option>By artist</option>
-      </select>
     </div>
 
-    <!-- This week's wall -->
-    <div class="sec-h">
-      <div class="ttl">This week's <em>wall</em></div>
-      <div class="count">3 hand-picked · refreshed Sundays</div>
+    <!-- LIBRARY -->
+    <div id="tab-library" class="tab-page">
+      <div class="sec-h">
+        <div class="ttl">My <em>library</em></div>
+        <div class="count"><span id="lib-count2">0</span> records saved</div>
+      </div>
+      <div id="library-body">
+        <div class="empty">
+          <div class="e-title">Library is empty</div>
+          <div class="e-sub">Browse the stacks and tap ⊕ on any record to save it here.</div>
+        </div>
+      </div>
     </div>
-
-    <div class="wall" id="wall"></div>
-
-    <!-- The Stacks -->
-    <div class="sec-h" style="margin-top:8px">
-      <div class="ttl">The <em>stacks</em></div>
-      <div class="count">142 records · sorted newest first</div>
-    </div>
-
-    <div class="list" id="list-body"></div>
-
-    <footer>
-      <div>© 2026 KazPicks · Independent · <b>Made for music nerds</b></div>
-      <div>Vol III · Issue 17</div>
-    </footer>
 
   </main>
 </div>
 
 </div>
 
-<!-- Drawer -->
+<!-- Drawer (mobile sidebar) -->
 <div class="drawer-bg" id="drawer-bg" onclick="closeDrawer()"></div>
 <aside class="drawer" id="drawer">
   <div class="drawer-h">
@@ -801,271 +902,872 @@ footer b{color:var(--ink);}
 
   <div style="margin-bottom:24px">
     <div class="sb-h">Browse by</div>
-    <div class="lens-list">
-      <div class="lens on"><span class="lens-i">◈</span><span class="lens-l">Everything</span><span class="lens-c">142</span></div>
-      <div class="lens"><span class="lens-i">↑</span><span class="lens-l">Charting</span><span class="lens-c">38</span></div>
-      <div class="lens"><span class="lens-i">◎</span><span class="lens-l">New Releases</span><span class="lens-c">61</span></div>
-      <div class="lens"><span class="lens-i">⬡</span><span class="lens-l">Community</span><span class="lens-c">29</span></div>
-      <div class="lens"><span class="lens-i">★</span><span class="lens-l">Critic Approved</span><span class="lens-c">22</span></div>
-    </div>
+    <div class="lens-list" id="lens-list-mobile"></div>
   </div>
 
   <div style="margin-bottom:24px">
     <div class="sb-h">Format</div>
-    <div class="tag-row">
-      <span class="tag on">All</span>
-      <span class="tag">Albums</span>
-      <span class="tag">Singles</span>
-      <span class="tag">Vinyl</span>
-      <span class="tag">Reissues</span>
-    </div>
+    <div class="tag-row" id="format-tags-mobile"></div>
   </div>
 
   <div style="margin-bottom:24px">
     <div class="sb-h">When</div>
-    <div class="tag-row">
-      <span class="tag yellow on">This week</span>
-      <span class="tag">2 weeks</span>
-      <span class="tag">Month</span>
-      <span class="tag">All time</span>
-    </div>
+    <div class="tag-row" id="date-presets-mobile"></div>
   </div>
 
   <div>
     <div class="sb-h">Genre</div>
-    <div class="tag-row">
-      <span class="tag">Indie</span>
-      <span class="tag">Rock</span>
-      <span class="tag">Hip-Hop</span>
-      <span class="tag">Electronic</span>
-      <span class="tag">Jazz</span>
-      <span class="tag">Folk</span>
-      <span class="tag">Soul</span>
-      <span class="tag">Ambient</span>
-    </div>
+    <div class="tag-row" id="genre-sb-mobile"></div>
   </div>
 </aside>
 
-<!-- Tab bar -->
+<!-- Mobile tab bar -->
 <nav class="tabbar">
   <div class="tabbar-inner">
-    <a class="on">
+    <a class="on" onclick="gotoTab('browse',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
       Browse
     </a>
-    <a>
+    <a onclick="gotoTab('foryou',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/></svg>
       For You
     </a>
-    <a>
+    <a onclick="gotoTab('myartists',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg>
       Artists
     </a>
-    <a>
+    <a onclick="gotoTab('library',this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6"/></svg>
       Library
     </a>
   </div>
 </nav>
 
+<!-- Settings modal -->
+<div class="overlay" id="ov-settings" onclick="bgClose(event,'ov-settings')">
+  <div class="modal">
+    <button class="m-close" onclick="closeOv('ov-settings')">✕</button>
+    <div class="m-title">Configure</div>
+    <div class="m-sub">Most things work out of the box. The Cloudflare Worker is what powers Charting, Reddit, Apple Music, AOTY, Metacritic, and Bandcamp.</div>
+
+    <div class="fg">
+      <div class="fl"><span>Cloudflare Worker URL</span><a href="https://workers.cloudflare.com" target="_blank">Deploy free →</a></div>
+      <input class="fi" id="in-worker" type="text" placeholder="https://your-proxy.workers.dev">
+    </div>
+    <div class="fg">
+      <div class="fl"><span>Store Region</span></div>
+      <select class="fi" id="in-store" style="cursor:pointer">
+        <option value="us">United States</option>
+        <option value="gb">United Kingdom</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="tool-btn solid" style="flex:1;padding:11px 16px" onclick="saveSettings()">Save & Reload</button>
+      <button class="tool-btn" style="padding:11px 16px" onclick="closeOv('ov-settings')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Artist modal -->
+<div class="overlay" id="ov-artists" onclick="bgClose(event,'ov-artists')">
+  <div class="modal">
+    <button class="m-close" onclick="closeOv('ov-artists')">✕</button>
+    <div class="m-title">Follow Artists</div>
+    <div class="m-sub">Search MusicBrainz — open music database, no API key needed. We'll track new releases and find related artists.</div>
+    <div class="fg" style="margin-bottom:8px">
+      <input class="fi" id="artist-q" placeholder="Search artists…" oninput="debouncedArtistSearch(this.value)" autocomplete="off">
+    </div>
+    <div class="results-box" id="artist-results"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">Added <span id="toast-msg"></span></div>
+
 <script>
-const RELEASES = [
-  {id:'r1', title:'Heliotropics', artist:'Juno Marker', type:'Album', genre:'Dream Pop', date:'Apr 25', score:88, src:'critic', srcLabel:'★ Critic', blurb:'Shoegaze with a synth-pop center — Cocteau Twins fronting Carly Rae Jepsen.', why:'first record that\u2019s stopped me cold this year', palette:['#5d2849','#b3401e']},
-  {id:'r2', title:'Slow Static',  artist:'Marisa Vey', type:'EP', genre:'Ambient', date:'Apr 25', score:76, src:'community', srcLabel:'⬡ Community', blurb:'30 minutes of patient, breathing drone. Pair with a long walk.', why:'empties the room, in a good way', palette:['#1f5c5e','#20180f']},
-  {id:'r3', title:'Verão Eterno', artist:'Edu Saldanha & Banda', type:'Reissue', genre:'Brazilian Psych · 1973', date:'Apr 22', score:87, src:'charting', srcLabel:'↑ Charting', blurb:'Holy-grail reissue from Light in the Attic.', why:'holy grail reissue — finally', palette:['#ede2c7','#b3401e']},
-  {id:'r4', title:'Frostwater',   artist:'The Hollow Pines', type:'Album', genre:'Indie Folk', date:'Apr 24', score:91, src:'critic', srcLabel:'★ Critic', blurb:'A devastating quiet record — banjo, pedal steel, a voice that breaks halfway through.', why:'banjo + pedal steel + heartbreak', palette:['#b3401e','#3a1408']},
-  {id:'r5', title:'Telegraph Hill', artist:'Auburn Wolves', type:'Single', genre:'Alt-Country', date:'Apr 24', score:0, src:'new', srcLabel:'◎ Just Dropped', blurb:'Lead single off their fall LP — Wilco at their most generous.', why:'', palette:['#8b6515','#3a2a18']},
-  {id:'r6', title:'NIGHT//HUNGER', artist:'TRAUMA WIRE', type:'Album', genre:'Industrial', date:'Apr 23', score:72, src:'community', srcLabel:'⬡ Community', blurb:'Bracing, fast, mean. Sounds great at 11pm.', why:'', palette:['#20180f','#5a4a32']},
-  {id:'r7', title:'Mirror Garden', artist:'Annika Holm', type:'Album', genre:'Chamber Pop', date:'Apr 23', score:84, src:'critic', srcLabel:'★ Critic', blurb:'Strings, woodblocks, lullabies. For fans of Joanna Newsom.', why:'', palette:['#1f5c5e','#ede2c7']},
-  {id:'r8', title:'Kerosene Sundays', artist:'Bo Reilly', type:'Album', genre:'Country', date:'Apr 22', score:69, src:'charting', srcLabel:'↑ Charting', blurb:'Texas-via-Nashville debut. He cries on track 7.', why:'', palette:['#b3401e','#802a12']},
-  {id:'r9', title:'Pleat', artist:'Pleat', type:'EP', genre:'Math Rock', date:'Apr 21', score:0, src:'followed', srcLabel:'◉ Followed', blurb:'Six tracks, no song over three minutes. Surprise drop.', why:'', palette:['#e8a90b','#20180f']},
-  {id:'r10', title:'After the Cassettes', artist:'Lila Voss', type:'Album', genre:'Synth Pop', date:'Apr 21', score:78, src:'community', srcLabel:'⬡ Community', blurb:'Bedroom synth-pop that grows up by the back half.', why:'', palette:['#5d2849','#e8a90b']},
-  {id:'r11', title:'Old Hill Workings', artist:'Lammas Tide', type:'Album', genre:'Folk Rock', date:'Apr 20', score:81, src:'critic', srcLabel:'★ Critic', blurb:'Cornish folk-rock revival.', why:'', palette:['#5a4a32','#1f5c5e']},
-  {id:'r12', title:'TRANSMIT/01', artist:'Console Garden', type:'Single', genre:'Electronic', date:'Apr 20', score:0, src:'new', srcLabel:'◎ Just Dropped', blurb:'Eight-minute techno workout from a new Berlin imprint.', why:'', palette:['#3a2a18','#b3401e']},
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let workerUrl = CONFIG.WORKER_URL || localStorage.getItem('wl_worker') || '';
+let store     = CONFIG.STORE      || localStorage.getItem('wl_store')  || 'us';
+
+let releases = [];
+let editorial = [];
+const safeJSON = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; } };
+let myArtists = safeJSON('wl_artists', []);
+let library   = safeJSON('wl_library', []);
+let activeTab = 'browse';
+let typeF='all', srcF='all', lensF='all', genreF='all', searchQ='';
+let dateFrom='', dateTo='', dateCustomized=false;
+
+// Wall picks (pinned releases)
+const WALL_KEY = 'wl_wall';
+function loadWall(){ try { return JSON.parse(localStorage.getItem(WALL_KEY)||'[]').slice(0,3); } catch { return []; } }
+function saveWall(arr){ localStorage.setItem(WALL_KEY, JSON.stringify(arr.slice(0,3))); }
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+const PAL = [
+  ['#5d2849','#b3401e'],['#1f5c5e','#20180f'],['#ede2c7','#b3401e'],['#b3401e','#3a1408'],
+  ['#8b6515','#3a2a18'],['#20180f','#5a4a32'],['#1f5c5e','#ede2c7'],['#b3401e','#802a12'],
+  ['#e8a90b','#20180f'],['#5d2849','#e8a90b'],['#5a4a32','#1f5c5e'],['#3a2a18','#b3401e'],
 ];
-const RBYID = Object.fromEntries(RELEASES.map(r=>[r.id,r]));
-const SRC_CLASS = {critic:'crit', community:'com', charting:'charting', new:'new', followed:'followed'};
-
-// ─── EDITORIAL STATE ──────────────────────────────────────────
-// Persists in localStorage. When you wire the live worker, swap these
-// helpers to fetch/POST a JSON blob from /editorial endpoint.
-const DEFAULT_NOTE = {
-  head: 'Big week for the <em>weirdos</em>.',
-  body: 'Three records worth flipping the sleeve over: a midwest emo revival, a Brazilian psych reissue we\u2019ve been hunting for years, and an ambient drone EP that empties the room in a good way.',
-  sig:  'the Kaz'
-};
-const DEFAULT_WALL = ['r4','r3','r2']; // auto-pick fallback
-
-function loadNote(){
-  try { return {...DEFAULT_NOTE, ...JSON.parse(localStorage.getItem('kp_note')||'{}')}; }
-  catch{ return DEFAULT_NOTE; }
+function palFor(s){ let h=0; for(const c of String(s)) h=Math.imul(31,h)+c.charCodeAt(0)|0; return PAL[Math.abs(h)%PAL.length]; }
+function inits(t){ return (t||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function relDate(iso){
+  if(!iso) return '';
+  const d=new Date(iso+'T00:00:00'), now=new Date();
+  const diff=Math.round((now-d)/864e5);
+  if(diff===0) return 'Today';
+  if(diff===1) return 'Yesterday';
+  if(diff<=6) return `${diff}d ago`;
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${M[d.getMonth()]} ${d.getDate()}`;
 }
-function saveNote(n){ localStorage.setItem('kp_note', JSON.stringify(n)); }
-function loadWall(){
-  try {
-    const w = JSON.parse(localStorage.getItem('kp_wall')||'null');
-    if (Array.isArray(w) && w.length) return w.slice(0,3);
-  } catch{}
-  return DEFAULT_WALL;
-}
-function saveWall(w){ localStorage.setItem('kp_wall', JSON.stringify(w)); }
-function resetWall(){ localStorage.removeItem('kp_wall'); renderWall(); renderList(); }
 
-// ─── EDITOR MODE ──────────────────────────────────────────────
-let editMode = false;
-function toggleEditor(){
-  editMode = !editMode;
-  document.body.classList.toggle('edit-mode', editMode);
-  document.getElementById('editor-toggle').classList.toggle('on', editMode);
-  document.querySelectorAll('#hero-r [contenteditable]').forEach(el=>{
-    el.setAttribute('contenteditable', editMode ? 'true' : 'false');
+// ─── WORKER FETCH ─────────────────────────────────────────────────────────────
+async function workerFetch(source){
+  if(!workerUrl) return [];
+  try{
+    const r = await fetch(`${workerUrl.replace(/\/+$/,'')}/${source}`,{cache:'no-store'});
+    if(!r.ok) return [];
+    const d = await r.json();
+    return (d.releases||[]).map(rel=>{
+      if(rel.dateRaw && (!rel.date || rel.date===rel.dateRaw)){ rel.date=relDate(rel.dateRaw); }
+      return rel;
+    });
+  } catch(e){ console.warn(`Worker [${source}]:`,e); return []; }
+}
+
+// ─── DEDUP / MERGE ────────────────────────────────────────────────────────────
+function mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR){
+  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const key = r => norm(r.artist)+'|'+norm(r.title);
+  const seen = new Set(), out = [];
+  for(const r of [...rdR,...ocR,...amR,...dzR,...aotyR,...mcR,...almR]){
+    const k = key(r);
+    if(seen.has(k)){
+      const ex = out.find(x=>key(x)===k);
+      if(ex){
+        if(!ex.img && r.img) ex.img = r.img;
+        if(!ex.score && r.score) ex.score = r.score;
+        if(!ex.blurb && r.blurb) ex.blurb = r.blurb;
+        if(!ex.genre && r.genre) ex.genre = r.genre;
+      }
+      continue;
+    }
+    seen.add(k);
+    out.push(r);
+  }
+  return out.sort((a,b)=>{
+    if(a.isNew && !b.isNew) return -1;
+    if(!a.isNew && b.isNew) return 1;
+    return (b.dateRaw||'').localeCompare(a.dateRaw||'');
   });
 }
 
-function applyNote(){
-  const n = loadNote();
-  document.getElementById('ed-head').innerHTML = n.head;
-  document.getElementById('ed-body').textContent = n.body;
-  document.getElementById('ed-sig').textContent  = n.sig;
+// ─── REASON ENGINE ────────────────────────────────────────────────────────────
+function reasonFor(rel){
+  const followedNames = myArtists.map(a => (a.name||'').toLowerCase());
+  if(followedNames.includes((rel.artist||'').toLowerCase())){
+    return { text: `By ${rel.artist} (followed)`, kind: 'followed' };
+  }
+  if(rel.score && rel.score >= 85) return { text: `Critically acclaimed (${rel.score})`, kind: 'critic' };
+  if(rel.score && rel.score >= 70) return { text: `Well reviewed (${rel.score})`, kind: 'critic' };
+  if(rel.source === 'rd'){
+    const sub = rel.blurb?.match(/r\/(\w+)/);
+    if(sub) return { text: `Trending on r/${sub[1]}`, kind: 'community' };
+    return { text: 'Reddit community pick', kind: 'community' };
+  }
+  if(rel.source === 'oc')   return { text: 'Currently charting',     kind: 'charting' };
+  if(rel.source === 'aoty') return { text: 'Album of the Year pick', kind: 'editorial' };
+  if(rel.isNew && rel.genre) return { text: `New ${rel.genre.toLowerCase()} release`, kind: 'new' };
+  return null;
 }
 
-document.addEventListener('input', e=>{
-  const el = e.target.closest('#hero-r [contenteditable="true"]');
-  if (!el) return;
-  const n = loadNote();
-  const k = el.dataset.key;
-  n[k] = (k === 'head') ? el.innerHTML : el.textContent;
-  saveNote(n);
-});
+// Map source code to label/class for the boutique design
+function srcLabelFor(rel){
+  const r = reasonFor(rel);
+  if(!r) return { label:'◎ New', cls:'new' };
+  const map = {
+    followed:  { label:'◉ Followed',     cls:'followed' },
+    critic:    { label:'★ Critic',       cls:'crit' },
+    community: { label:'⬡ Community',    cls:'com' },
+    charting:  { label:'↑ Charting',     cls:'charting' },
+    editorial: { label:'★ Critic',       cls:'crit' },
+    new:       { label:'◎ New',          cls:'new' },
+  };
+  return map[r.kind] || { label:'◎ New', cls:'new' };
+}
 
-// ─── RENDER WALL (3 featured) ─────────────────────────────────
-function renderWall(){
+// Featured logic
+function isFeatured(r){
+  let s = 0;
+  if(r.source === 'oc') s += 2;
+  if(r.source === 'rd') s += 1;
+  if(r.score && r.score >= 70) s += 2;
+  if(r.score && r.score >= 85) s += 1;
+  if(r.isNew) s += 1;
+  return s >= 2;
+}
+
+
+// ─── CARD RENDERERS ───────────────────────────────────────────────────────────
+// SVG icons for streaming services
+const ICON_SPOTIFY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.745 3.808-.87 7.076-.496 9.715 1.115.293.18.386.563.207.854zm1.214-2.71c-.226.366-.704.482-1.07.256-2.695-1.655-6.815-2.14-9.873-1.17-.413.13-.857-.096-.988-.51-.13-.414.095-.857.51-.987 3.51-1.113 8.08-.57 11.176 1.334.367.226.483.704.257 1.07zm.106-2.836C14.73 9.014 8.544 8.785 4.98 9.87c-.496.15-1.01-.13-1.16-.626-.15-.495.13-1.01.626-1.16 4.14-1.265 10.97-1.01 14.765 1.242.443.264.587.842.324 1.285-.265.444-.843.588-1.286.325z"/></svg>';
+const ICON_APPLE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.099-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.56-1.702z"/></svg>';
+const ICON_YT = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1.9 14.5v-9l7.7 4.5-7.7 4.5z"/></svg>';
+const ICON_PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>';
+const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="M5 12l5 5 9-11"/></svg>';
+
+// Wall card (large pinned format, top of page)
+function wallCard(rel){
+  if(!rel){
+    return `<div class="wall-slot-empty"><div class="ico">◇</div><b>Empty slot</b><div>Pin a release below to feature it here</div></div>`;
+  }
+  const [g1,g2] = palFor(rel.id);
+  const tc = (rel.type||'other').toLowerCase();
+  const sl = srcLabelFor(rel);
+  const r = reasonFor(rel);
+  return `<article class="pick-card">
+    <button class="unpin-btn" onclick="event.stopPropagation();unpinFromWall('${esc(rel.id)}')" title="Unpin">✕</button>
+    <div class="sleeve">
+      <span class="badge ${sl.cls==='crit'?'terra':sl.cls==='charting'?'yellow':sl.cls==='com'?'teal':''}">${sl.label}${rel.score?` · ${rel.score}`:''}</span>
+      <div class="art" style="background:linear-gradient(135deg,${g1},${g2})">
+        ${rel.img?`<img src="${esc(rel.img)}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">`:''}
+        <span class="art-fb">${inits(rel.title)}</span>
+      </div>
+    </div>
+    <div class="body">
+      <div class="kicker">${esc(rel.type||'Other')}${rel.genre?` · ${esc(rel.genre)}`:''}</div>
+      <h3>${esc(rel.title)}</h3>
+      <div class="artist">${esc(rel.artist)}</div>
+      ${r?`<div class="why">${esc(r.text)}</div>`:''}
+      <div class="row">
+        <span class="pip ${tc}">${esc(rel.type||'Other')}</span>
+        <span style="margin-left:auto">${esc(rel.date||'')}</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+// Row card (the boutique list layout)
+function rowCard(rel){
+  const inLib = library.some(x => x.id === rel.id);
+  const [g1,g2] = palFor(rel.id);
+  const tc = (rel.type||'other').toLowerCase();
+  const sl = srcLabelFor(rel);
+  const r = reasonFor(rel);
+  const sc = rel.score >= 85 ? 'hi' : rel.score >= 65 ? '' : 'mid';
   const wall = loadWall();
-  const html = [0,1,2].map(slot => {
-    const id = wall[slot];
-    const r = id ? RBYID[id] : null;
-    if (!r){
-      return `<div class="wall-slot-empty">
-        <div class="ico">◇</div>
-        <b>Slot ${slot+1} empty</b>
-        <div>Turn on Editor mode<br>and pin a record below</div>
-      </div>`;
+  const pinned = wall.includes(rel.id);
+
+  const q = encodeURIComponent(rel.artist+' '+rel.title);
+  const spUrl = `https://open.spotify.com/search/${q}/albums`;
+  const amUrl = `https://music.apple.com/us/search?term=${q}`;
+  const ytUrl = `https://music.youtube.com/search?q=${q}`;
+
+  // Use blurb if present, else use the reason text
+  const blurbText = rel.blurb || (r?r.text:'');
+
+  return `<div class="row-item${pinned?' pick':''}" data-id="${esc(rel.id)}">
+    <div class="row-sleeve">
+      <div class="art" style="background:linear-gradient(135deg,${g1},${g2})">
+        ${rel.img?`<img src="${esc(rel.img)}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">`:''}
+        <span class="art-fb">${inits(rel.title)}</span>
+      </div>
+      <button class="pin-btn ${pinned?'pinned':''}" onclick="event.stopPropagation();${pinned?'unpinFromWall':'pinToWall'}('${esc(rel.id)}')" title="${pinned?'Unpin from wall':'Pin to wall'}">${pinned?'✓':'⊕'}</button>
+    </div>
+    <div class="row-body">
+      <div class="row-kicker">
+        <span class="src ${sl.cls}">${sl.label}</span>
+        ${rel.genre?`<span class="dot">·</span><span>${esc(rel.genre)}</span>`:''}
+      </div>
+      <h3 class="row-title">${esc(rel.title)}</h3>
+      <div class="row-artist">${esc(rel.artist)}</div>
+      ${blurbText?`<div class="row-blurb">${esc(blurbText)}</div>`:''}
+      <div class="row-foot">
+        <span class="pip ${tc}">${esc(rel.type||'Other')}</span>
+        <span>${esc(rel.date||'')}</span>
+      </div>
+    </div>
+    <div class="row-side">
+      ${rel.score?`<div class="score-circle ${sc}">${rel.score}</div>`:'<div></div>'}
+      <div class="row-actions">
+        <button class="act" onclick="window.open('${spUrl}','_blank')" title="Spotify">${ICON_SPOTIFY}</button>
+        <button class="act" onclick="window.open('${amUrl}','_blank')" title="Apple Music">${ICON_APPLE}</button>
+        <button class="act" onclick="window.open('${ytUrl}','_blank')" title="YouTube Music">${ICON_YT}</button>
+        <button class="act ${inLib?'in-lib':'solid'}" onclick="event.stopPropagation();toggleLib('${esc(rel.id)}',this)" title="${inLib?'In library':'Add to library'}">${inLib?ICON_CHECK:ICON_PLUS}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function skelRow(){
+  return `<div class="skel-row"><div class="skel-art skel-pulse"></div><div><div class="skel-line skel-pulse" style="width:50%"></div><div class="skel-line skel-pulse" style="width:30%"></div><div class="skel-line skel-pulse" style="width:70%;height:10px;margin-top:14px"></div><div class="skel-line skel-pulse" style="width:60%;height:10px"></div></div><div></div></div>`;
+}
+
+
+// ─── BROWSE ──────────────────────────────────────────────────────────────────
+async function loadBrowse(force=false){
+  if(!force && releases.length){ renderBrowse(); return; }
+  document.getElementById('list-body').innerHTML = Array(8).fill('').map(skelRow).join('');
+  document.getElementById('wall-section').style.display = 'none';
+  showStatus(`<span class="spin"></span> Loading the stacks…`);
+  setHeroDate();
+
+  try{
+    const [rdR,ocR,amR,dzR,aotyR,mcR,almR,bcR] = await Promise.all([
+      workerFetch('reddit'),
+      workerFetch('officialcharts'),
+      workerFetch('applemusic'),
+      workerFetch('deezer'),
+      workerFetch('aoty'),
+      workerFetch('metacritic'),
+      workerFetch('allmusic'),
+      workerFetch('bandcamp'),
+    ]);
+
+    releases = mergeAll(rdR,ocR,amR,dzR,aotyR,mcR,almR);
+    editorial = [...bcR, ...almR];
+
+    updateCounts();
+    buildGenreSidebar();
+    renderBrowse();
+
+    const now = new Date();
+    const updated = `refreshed ${now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+    document.getElementById('hero-updated').textContent = updated;
+    const total = rdR.length+ocR.length+amR.length+dzR.length+aotyR.length+mcR.length+almR.length;
+    document.getElementById('hero-source-count').textContent = `${total} from 7 sources`;
+    document.getElementById('issue-count').textContent = `${releases.length} records`;
+    showStatus(`<b>${releases.length}</b> records · ${total>releases.length?`${total-releases.length} duplicates merged · `:''}sorted by signal`);
+  } catch(e){
+    showStatus(`<span style="color:var(--terra)">Error loading: ${e.message}</span>`);
+  }
+}
+
+function setHeroDate(){
+  const d = new Date();
+  const f = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const issue = Math.ceil((d.getDate()+(new Date(d.getFullYear(),d.getMonth(),1).getDay()))/7);
+  document.getElementById('hero-date').textContent = f;
+  document.getElementById('issue-date').textContent = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('vol-meta').textContent = `Vol III · Issue ${17}`;
+}
+
+function applyFilters(list){
+  const q = (searchQ||'').toLowerCase().trim();
+  return list.filter(r=>{
+    if(typeF !== 'all' && r.type !== typeF) return false;
+    if(lensF === 'charting' && r.source !== 'oc') return false;
+    if(lensF === 'new' && r.source !== 'dz' && r.source !== 'am') return false;
+    if(lensF === 'community' && r.source !== 'rd') return false;
+    if(lensF === 'scored' && (!r.score || r.score < 1)) return false;
+    if(genreF !== 'all' && r.genre !== genreF) return false;
+    if(lensF !== 'charting' && lensF !== 'community'){
+      if(dateFrom && r.dateRaw && r.dateRaw < dateFrom) return false;
+      if(dateTo && r.dateRaw && r.dateRaw > dateTo) return false;
     }
-    const tc = r.type.toLowerCase();
-    const initials = r.artist.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
-    const badgeColor = r.src==='critic'?'terra':r.src==='charting'?'yellow':r.src==='community'?'teal':'';
-    const badgeLabel = `${r.srcLabel}${r.score?` · ${r.score}`:''}`;
-    return `
-      <article class="pick-card">
-        <button class="unpin-btn" onclick="unpinFromWall('${r.id}')" title="Unpin">✕</button>
-        <div class="sleeve">
-          <span class="badge ${badgeColor}">${badgeLabel}</span>
-          <div class="art" style="background:linear-gradient(135deg,${r.palette[0]} 0%, ${r.palette[1]} 100%);">
-            <span class="art-fb">${initials}</span>
-          </div>
-        </div>
-        <div class="body">
-          <div class="kicker">${r.type} · ${r.genre}</div>
-          <h3>${r.title}</h3>
-          <div class="artist">${r.artist}</div>
-          ${r.why ? `<div class="why">"${r.why}"</div>` : ''}
-          <div class="row">
-            <span class="pip ${tc}">${r.type}</span>
-            <span style="margin-left:auto">${r.date}</span>
-          </div>
-        </div>
-      </article>
-    `;
-  }).join('');
-  document.getElementById('wall').innerHTML = html;
+    if(q && !((r.title+' '+r.artist+' '+(r.genre||'')).toLowerCase().includes(q))) return false;
+    return true;
+  });
+}
+
+function sortReleases(list){
+  const mode = document.getElementById('sort-sel')?.value || 'release';
+  const c = [...list];
+  if(mode==='alpha')  return c.sort((a,b)=>a.title.localeCompare(b.title));
+  if(mode==='artist') return c.sort((a,b)=>a.artist.localeCompare(b.artist));
+  return c;
+}
+
+function renderBrowse(){
+  const filtered = sortReleases(applyFilters(releases));
+  const wallSec = document.getElementById('wall-section');
+  const listEl  = document.getElementById('list-body');
+
+  if(!filtered.length){
+    wallSec.style.display = 'none';
+    listEl.innerHTML = `<div class="empty">
+      <div class="e-title">Nothing matched</div>
+      <div class="e-sub">Try a different filter or search term.</div>
+      <button class="tool-btn" style="margin-top:8px;padding:10px 16px" onclick="resetFilters()">Reset filters</button>
+    </div>`;
+    return;
+  }
+
+  // Determine if we should show the wall (only on the default unfiltered "Everything" view)
+  const suppressWall = lensF !== 'all' || dateCustomized || searchQ || genreF !== 'all';
+  const wallIds = loadWall();
+  let wallReleases = wallIds.map(id => releases.find(r=>r.id===id)).filter(Boolean);
+
+  if(!suppressWall && wallReleases.length === 0){
+    // Auto-populate wall with top 3 featured releases on first load
+    const auto = filtered.filter(isFeatured).slice(0, 3);
+    if(auto.length >= 1){
+      wallReleases = auto;
+      saveWall(auto.map(r=>r.id));
+    }
+  }
+
+  if(!suppressWall && wallReleases.length){
+    wallSec.style.display = 'block';
+    const wallHtml = [0,1,2].map(i => wallCard(wallReleases[i] || null)).join('');
+    document.getElementById('wall').innerHTML = wallHtml;
+    document.getElementById('wall-count').textContent = `${wallReleases.length} of 3 picks · click ⊕ on any record below to pin`;
+  } else {
+    wallSec.style.display = 'none';
+  }
+
+  // The Stacks (full list, excluding wall items)
+  const wallIdSet = new Set(wallReleases.map(r=>r.id));
+  const stacksList = suppressWall ? filtered : filtered.filter(r => !wallIdSet.has(r.id));
+  document.getElementById('stacks-count').textContent = `${stacksList.length} records · sorted ${
+    document.getElementById('sort-sel')?.value === 'alpha' ? 'alphabetically' :
+    document.getElementById('sort-sel')?.value === 'artist' ? 'by artist' : 'newest first'}`;
+  listEl.innerHTML = stacksList.map(rowCard).join('');
 }
 
 function pinToWall(id){
-  let w = loadWall().filter(x => x !== id);
+  let w = loadWall().filter(x=>x!==id);
   w.unshift(id);
-  w = w.slice(0,3);
   saveWall(w);
-  renderWall(); renderList();
+  toast(`Pinned to wall`);
+  renderBrowse();
 }
 function unpinFromWall(id){
-  const w = loadWall().filter(x => x !== id);
+  const w = loadWall().filter(x=>x!==id);
   saveWall(w);
-  renderWall(); renderList();
+  renderBrowse();
 }
 
-// ─── RENDER LIST ──────────────────────────────────────────────
-function renderList(){
-  const wall = loadWall();
-  const html = RELEASES.map((r,i) => {
-    const tc = r.type.toLowerCase();
-    const sc = r.score >= 85 ? 'hi' : r.score >= 65 ? '' : 'mid';
-    const srcc = SRC_CLASS[r.src] || '';
-    const initials = r.artist.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
-    const pinned = wall.includes(r.id);
-    return `
-      <div class="row-item ${pinned ? 'pick' : ''}">
-        <div class="row-sleeve">
-          <div class="art" style="background:linear-gradient(135deg,${r.palette[0]} 0%, ${r.palette[1]} 100%);">
-            <span class="art-fb">${initials}</span>
-          </div>
-          <button class="pin-btn ${pinned?'pinned':''}" onclick="${pinned?`unpinFromWall('${r.id}')`:`pinToWall('${r.id}')`}" title="${pinned?'Unpin from Wall':'Pin to Wall'}">${pinned?'✓':'⊕'}</button>
-        </div>
-        <div class="row-body">
-          <div class="row-kicker">
-            <span class="src ${srcc}">${r.srcLabel}</span>
-            <span class="dot">·</span>
-            <span>${r.genre}</span>
-          </div>
-          <h3 class="row-title">${r.title}</h3>
-          <div class="row-artist">${r.artist}</div>
-          <div class="row-blurb">${r.blurb}</div>
-          <div class="row-foot">
-            <span class="pip ${tc}">${r.type}</span>
-            <span>${r.date}</span>
-          </div>
-        </div>
-        <div class="row-side">
-          ${r.score ? `<div class="score-circle ${sc}">${r.score}</div>` : '<div></div>'}
-          <div class="row-actions">
-            <button class="act" title="Spotify"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.586 14.424a.624.624 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.624.624 0 11-.279-1.215c3.808-.87 7.077-.496 9.713 1.115a.624.624 0 01.208.857z"/></svg></button>
-            <button class="act" title="Apple Music"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.099-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948z"/></svg></button>
-            <button class="act solid" title="Add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
-          </div>
-        </div>
+function showStatus(html){ document.getElementById('status-bar').innerHTML = html; }
+
+// ─── COUNTS / LENS ────────────────────────────────────────────────────────────
+function lensCount(lens){
+  if(lens==='all')       return releases.length;
+  if(lens==='charting')  return releases.filter(r=>r.source==='oc').length;
+  if(lens==='new')       return releases.filter(r=>r.source==='dz' || r.source==='am').length;
+  if(lens==='community') return releases.filter(r=>r.source==='rd').length;
+  if(lens==='scored')    return releases.filter(r=>r.score && r.score > 0).length;
+  return 0;
+}
+function updateCounts(){
+  ['all','charting','new','community','scored'].forEach(l=>{
+    const el = document.getElementById('lc-'+l);
+    if(el) el.textContent = lensCount(l);
+  });
+  document.getElementById('lib-count').textContent = library.length;
+  document.getElementById('lib-count2').textContent = library.length;
+  document.getElementById('artist-count').textContent = myArtists.length;
+}
+
+function setLens(lens, el){
+  lensF = lens;
+  document.querySelectorAll('.lens').forEach(l=>l.classList.remove('on'));
+  el.classList.add('on');
+  if(activeTab==='browse') renderBrowse();
+  closeDrawer();
+}
+
+// ─── SEARCH / FILTERS ────────────────────────────────────────────────────────
+function onSearch(v){ searchQ = v; if(activeTab==='browse') renderBrowse(); }
+
+function setType(v, el){
+  typeF = v;
+  document.querySelectorAll('#format-tags .tag').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  if(activeTab==='browse') renderBrowse();
+}
+
+function setDatePreset(days, el){
+  document.querySelectorAll('#date-presets .tag').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  dateCustomized = (days !== 7);
+  if(days === 0){ dateFrom = ''; dateTo = ''; }
+  else {
+    const to = new Date();
+    const from = new Date(+to - days*864e5);
+    dateTo = to.toISOString().slice(0,10);
+    dateFrom = from.toISOString().slice(0,10);
+  }
+  if(activeTab==='browse') renderBrowse();
+}
+
+function initDatePicker(){
+  document.querySelectorAll('#date-presets .tag').forEach(t=>t.classList.remove('on'));
+  const w = document.querySelector('#date-presets .tag[data-days="7"]');
+  if(w) w.classList.add('on');
+  const to = new Date();
+  const from = new Date(+to - 7*864e5);
+  dateTo = to.toISOString().slice(0,10);
+  dateFrom = from.toISOString().slice(0,10);
+}
+
+function resetFilters(){
+  typeF='all'; lensF='all'; genreF='all'; searchQ=''; dateCustomized=false;
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.lens').forEach(l=>l.classList.remove('on'));
+  document.querySelector('.lens[data-lens="all"]')?.classList.add('on');
+  document.querySelector('#format-tags .tag[data-type="all"]')?.classList.add('on');
+  initDatePicker();
+  document.getElementById('browse-q').value = '';
+  buildGenreSidebar();
+  if(activeTab !== 'browse') gotoTab('browse', document.querySelector('.dnav a'));
+  else renderBrowse();
+}
+
+// Genre sidebar
+function buildGenreSidebar(){
+  const base = releases.filter(r=>{
+    if(typeF !== 'all' && r.type !== typeF) return false;
+    if(lensF === 'charting' && r.source !== 'oc') return false;
+    if(lensF === 'new' && r.source !== 'dz' && r.source !== 'am') return false;
+    if(lensF === 'community' && r.source !== 'rd') return false;
+    if(lensF === 'scored' && (!r.score || r.score < 1)) return false;
+    if(dateFrom && r.dateRaw && r.dateRaw < dateFrom) return false;
+    if(dateTo   && r.dateRaw && r.dateRaw > dateTo)   return false;
+    return r.genre;
+  });
+  const el = document.getElementById('genre-sb');
+  if(!base.length){
+    el.innerHTML = `<span class="tag" style="opacity:0.5">No genre data</span>`;
+    return;
+  }
+  const map = {};
+  base.forEach(r=>{ map[r.genre] = (map[r.genre]||0)+1; });
+  const genres = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  let h = `<span class="tag${genreF==='all'?' on':''}" data-genre="all">All <span style="opacity:0.6;margin-left:3px">${base.length}</span></span>`;
+  for(const [g,c] of genres){
+    h += `<span class="tag${genreF===g?' on':''}" data-genre="${esc(g)}">${esc(g)} <span style="opacity:0.6;margin-left:3px">${c}</span></span>`;
+  }
+  el.innerHTML = h;
+  el.querySelectorAll('.tag').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      genreF = t.dataset.genre;
+      el.querySelectorAll('.tag').forEach(x=>x.classList.remove('on'));
+      t.classList.add('on');
+      if(activeTab==='browse') renderBrowse();
+    });
+  });
+}
+
+
+// ─── LIBRARY ──────────────────────────────────────────────────────────────────
+function toggleLib(id, btn){
+  const rel = releases.find(r=>r.id===id) || library.find(r=>r.id===id);
+  if(!rel) return;
+  const i = library.findIndex(x=>x.id===id);
+  if(i === -1){ library.push(rel); toast(`Saved <b>${rel.title}</b>`); }
+  else { library.splice(i,1); }
+  localStorage.setItem('wl_library', JSON.stringify(library));
+  updateCounts();
+  if(btn){
+    const inLib = library.some(x=>x.id===id);
+    btn.innerHTML = inLib ? ICON_CHECK : ICON_PLUS;
+    btn.className = `act ${inLib?'in-lib':'solid'}`;
+    btn.title = inLib ? 'In library' : 'Add to library';
+  }
+  if(activeTab === 'library') renderLibrary();
+  if(activeTab === 'browse')  renderBrowse();
+}
+
+function renderLibrary(){
+  const el = document.getElementById('library-body');
+  document.getElementById('lib-count2').textContent = library.length;
+  if(!library.length){
+    el.innerHTML = `<div class="empty"><div class="e-title">Library is empty</div><div class="e-sub">Browse the stacks and tap ⊕ on any record to save it here.</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="list">${library.map(rowCard).join('')}</div>`;
+}
+
+// ─── ARTISTS ──────────────────────────────────────────────────────────────────
+function renderArtists(){
+  const el = document.getElementById('artists-body');
+  document.getElementById('artist-count').textContent = myArtists.length;
+  const norm = s => (s||'').toLowerCase();
+
+  if(!myArtists.length){
+    el.innerHTML = `<div class="empty">
+      <div class="e-title">No artists yet</div>
+      <div class="e-sub">Follow artists you love. We'll flag new releases by them and use them to power your For You feed.</div>
+      <button class="tool-btn solid" style="margin-top:12px" onclick="openArtistModal()">⊕ Follow Artists</button>
+    </div>`;
+    document.getElementById('artist-rel-sec').style.display = 'none';
+    return;
+  }
+
+  // Render artists as a row-card-like grid
+  let h = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">';
+  myArtists.forEach(a=>{
+    const [g1,g2] = palFor(a.name);
+    const artRels = releases.filter(r => norm(r.artist) === norm(a.name));
+    h += `<div style="display:flex;gap:14px;align-items:center;padding:14px;border:1px solid var(--rule);border-radius:8px;background:var(--paper-2);${artRels.length?'border-color:var(--terra);':''}">
+      <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${g1},${g2});display:flex;align-items:center;justify-content:center;font-family:'Roboto Slab',serif;font-weight:900;color:rgba(255,255,255,0.7);font-size:16px;flex-shrink:0;">${inits(a.name)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Roboto Slab',serif;font-weight:700;font-size:14px;color:var(--ink);">${esc(a.name)}</div>
+        <div style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px;">${a.genre?esc(a.genre)+' · ':''}${artRels.length?`<b style="color:var(--terra)">${artRels.length} new</b>`:'no new releases'}</div>
       </div>
-    `;
-  }).join('');
-  document.getElementById('list-body').innerHTML = html;
+      <button onclick="removeArtist('${esc(a.name)}')" style="background:transparent;border:1px solid var(--rule);color:var(--ink-soft);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;">✕</button>
+    </div>`;
+  });
+  h += `<div onclick="openArtistModal()" style="display:flex;align-items:center;justify-content:center;padding:18px;border:1.5px dashed var(--rule);border-radius:8px;cursor:pointer;color:var(--ink-soft);font-family:'Courier Prime',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;">+ Add more</div>`;
+  h += '</div>';
+  el.innerHTML = h;
+
+  // New from your artists section
+  const artRels = releases.filter(r => myArtists.some(a => norm(r.artist) === norm(a.name)));
+  const sec = document.getElementById('artist-rel-sec');
+  if(artRels.length){
+    sec.style.display = 'block';
+    document.getElementById('artist-rel-grid').innerHTML = artRels.map(rowCard).join('');
+  } else {
+    sec.style.display = 'none';
+  }
 }
 
-// init
-applyNote();
-renderWall();
-renderList();
+function removeArtist(name){
+  myArtists = myArtists.filter(a => a.name !== name);
+  localStorage.setItem('wl_artists', JSON.stringify(myArtists));
+  renderArtists();
+}
+
+// ─── ARTIST SEARCH (MusicBrainz) ─────────────────────────────────────────────
+let aTimer = null;
+let currentSearchResults = [];
+function debouncedArtistSearch(q){
+  clearTimeout(aTimer);
+  if(!q.trim()){ document.getElementById('artist-results').innerHTML = ''; return; }
+  aTimer = setTimeout(()=>runArtistSearch(q), 400);
+}
+
+async function runArtistSearch(q){
+  const el = document.getElementById('artist-results');
+  el.innerHTML = `<div class="lr"><span class="spin"></span> Searching MusicBrainz…</div>`;
+  const results = await mbSearchArtist(q);
+  const fresh = results.filter(a => !myArtists.some(m => m.mbid === a.mbid));
+  if(!fresh.length){
+    el.innerHTML = `<div style="padding:14px;font-family:'Roboto Slab',serif;font-size:13px;color:var(--ink-soft);">${results.length?'All results already followed.':'No artists found.'}</div>`;
+    return;
+  }
+  currentSearchResults = fresh;
+  el.innerHTML = fresh.map(a=>{
+    const [g1,g2] = palFor(a.name);
+    const meta = [a.type, a.area, a.disambiguation].filter(Boolean).join(' · ');
+    const top = a.tags[0] || '';
+    return `<div class="sr-item">
+      <div class="sr-av" style="background:linear-gradient(135deg,${g1},${g2})">${inits(a.name)}</div>
+      <div style="min-width:0;flex:1">
+        <div class="sr-name">${esc(a.name)}</div>
+        <div class="sr-meta">${esc(meta)}${top?` · ${esc(top)}`:''}</div>
+      </div>
+      <button class="sr-add" onclick="followArtistById('${esc(a.mbid)}')">+ Follow</button>
+    </div>`;
+  }).join('');
+}
+
+function followArtistById(mbid){
+  const a = currentSearchResults.find(x => x.mbid === mbid);
+  if(a) followArtist({ name: a.name, mbid: a.mbid, area: a.area, genre: a.tags[0] || null });
+}
+
+function followArtist(a){
+  if(!myArtists.some(x => x.mbid === a.mbid)){
+    myArtists.push(a);
+    localStorage.setItem('wl_artists', JSON.stringify(myArtists));
+    toast(`Following <b>${a.name}</b>`);
+  }
+  document.getElementById('artist-results').innerHTML = '';
+  document.getElementById('artist-q').value = '';
+  closeOv('ov-artists');
+  renderArtists();
+  updateCounts();
+}
+
+// ─── FOR YOU ──────────────────────────────────────────────────────────────────
+let mbReleasesCache = (()=>{ try { return JSON.parse(localStorage.getItem('wl_mb_cache')||'{}'); } catch { return {}; } })();
+const MB_CACHE_TTL = 6 * 3600 * 1000;
+function mbCacheGet(mbid){
+  const e = mbReleasesCache[mbid];
+  if(!e) return null;
+  if(Date.now() - e.ts > MB_CACHE_TTL){ delete mbReleasesCache[mbid]; return null; }
+  return e.releases;
+}
+function mbCacheSet(mbid, rels){
+  mbReleasesCache[mbid] = { releases: rels, ts: Date.now() };
+  try { localStorage.setItem('wl_mb_cache', JSON.stringify(mbReleasesCache)); } catch {}
+}
+
+async function buildRecs(){
+  if(!myArtists.length) return;
+  const el = document.getElementById('recs-body');
+  const mbArtists = myArtists.filter(a => a.mbid);
+  if(!mbArtists.length){
+    el.innerHTML = `<div class="empty"><div class="e-title">Need MusicBrainz data</div><div class="e-sub">Re-add your artists via the Follow Artists modal so we can find related acts.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="lr"><span class="spin"></span> Building your custom feed…</div>`;
+  const norm = s => (s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const followedNorms = new Set(myArtists.map(a => norm(a.name)));
+
+  const candidates = [];
+  const seenIds = new Set();
+  const addCandidate = (rel, because) => {
+    if(followedNorms.has(norm(rel.artist))) return;
+    if(seenIds.has(rel.id)) return;
+    seenIds.add(rel.id);
+    candidates.push({ ...rel, because, blurb: because });
+  };
+
+  const shuffled = [...mbArtists].sort(()=>0.5-Math.random()).slice(0, 4);
+  for(const artist of shuffled){
+    const sims = await mbSimilarArtists(artist.mbid);
+    const simsShuf = sims.sort(()=>0.5-Math.random()).slice(0, 4);
+    for(const sim of simsShuf){
+      const matches = releases.filter(r => norm(r.artist) === norm(sim.name));
+      for(const rel of matches) addCandidate(rel, `Because you follow ${artist.name}`);
+      if(sim.mbid && candidates.length < 40){
+        let simRels = mbCacheGet(sim.mbid);
+        if(!simRels){
+          simRels = await mbArtistReleases(sim.mbid, 3);
+          mbCacheSet(sim.mbid, simRels);
+        }
+        for(const rel of simRels) addCandidate(rel, `Because you follow ${artist.name}`);
+      }
+    }
+  }
+
+  if(!candidates.length){
+    el.innerHTML = `<div class="empty"><div class="e-title">No recommendations yet</div><div class="e-sub">MusicBrainz didn't find related artists with recent releases. Try following a few more artists.</div></div>`;
+    return;
+  }
+
+  const picks = candidates.sort(()=>0.5-Math.random()).slice(0, 8);
+  el.innerHTML = `<div class="list">${picks.map(rowCard).join('')}</div>`;
+}
+
+// ─── MUSICBRAINZ API ─────────────────────────────────────────────────────────
+let mbQueue = Promise.resolve();
+function mbFetch(url){
+  return new Promise(resolve=>{
+    mbQueue = mbQueue.then(()=>new Promise(r=>setTimeout(r,1100))).then(async ()=>{
+      try{
+        const res = await fetch(url, { headers: { 'Accept':'application/json', 'User-Agent':'KazPicks/1.0' } });
+        resolve(await res.json());
+      } catch { resolve(null); }
+    });
+  });
+}
+async function mbSearchArtist(q){
+  const data = await mbFetch(`https://musicbrainz.org/ws/2/artist?query=artist:"${encodeURIComponent(q)}"&fmt=json`);
+  if(!data || !data.artists) return [];
+  return data.artists.map(a=>({ name:a.name, mbid:a.id, type:a.type, area:a.area?.name, disambiguation:a.disambiguation, tags:(a.tags||[]).map(t=>t.name) }));
+}
+async function mbArtistReleases(mbid, limit=50){
+  const data = await mbFetch(`https://musicbrainz.org/ws/2/release-group?artist=${mbid}&fmt=json&limit=${limit}`);
+  if(!data || !data['release-groups']) return [];
+  const out = [];
+  for(const rg of data['release-groups']){
+    const dateRaw = rg['first-release-date'] || '';
+    out.push({
+      id: 'mb-'+rg.id, title: rg.title, artist: '',
+      type: rg['primary-type']==='Album'?'Album':(rg['primary-type']==='EP'?'EP':'Single'),
+      date: relDate(dateRaw), dateRaw, genre: null, score: null, source: 'mb',
+      img: `https://coverartarchive.org/release-group/${rg.id}/front-250`,
+      url: `https://musicbrainz.org/release-group/${rg.id}`,
+      isNew: dateRaw ? (Date.now()-new Date(dateRaw+'T00:00:00').getTime()) < 28*86400000 : false,
+    });
+  }
+  return out;
+}
+async function mbSimilarArtists(mbid){
+  const data = await mbFetch(`https://musicbrainz.org/ws/2/artist/${mbid}?inc=artist-rels&fmt=json`);
+  if(!data || !data.relations) return [];
+  return data.relations.filter(r=>r['target-type']==='artist').map(r=>({ name:r.artist.name, mbid:r.artist.id }));
+}
+
+// ─── MODALS / NAV / TOAST ─────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('in-worker').value = workerUrl;
+  document.getElementById('in-store').value = store;
+  document.getElementById('ov-settings').classList.add('open');
+}
+function saveSettings(){
+  workerUrl = document.getElementById('in-worker').value.trim().replace(/\/+$/,'');
+  store = document.getElementById('in-store').value;
+  localStorage.setItem('wl_worker', workerUrl);
+  localStorage.setItem('wl_store', store);
+  closeOv('ov-settings');
+  toast('Settings saved');
+  loadBrowse(true);
+}
+function openArtistModal(){
+  document.getElementById('artist-q').value = '';
+  document.getElementById('artist-results').innerHTML = '';
+  document.getElementById('ov-artists').classList.add('open');
+  setTimeout(()=>document.getElementById('artist-q').focus(), 100);
+}
+function closeOv(id){ document.getElementById(id).classList.remove('open'); }
+function bgClose(e, id){ if(e.target === document.getElementById(id)) closeOv(id); }
 
 function openDrawer(){
   document.getElementById('drawer').classList.add('open');
   document.getElementById('drawer-bg').classList.add('open');
-  document.body.style.overflow='hidden';
 }
 function closeDrawer(){
   document.getElementById('drawer').classList.remove('open');
   document.getElementById('drawer-bg').classList.remove('open');
-  document.body.style.overflow='';
 }
 
-document.addEventListener('click', e=>{
-  const lens = e.target.closest('.lens');
-  if(lens){
-    lens.parentElement.querySelectorAll('.lens').forEach(x=>x.classList.remove('on'));
-    lens.classList.add('on');
+function gotoTab(tab, el){
+  activeTab = tab;
+  document.querySelectorAll('.dnav a, .tabbar a').forEach(a=>a.classList.remove('on'));
+  // Match tab name to nav element
+  const navMap = { browse:0, foryou:1, myartists:2, library:3 };
+  const idx = navMap[tab];
+  document.querySelectorAll('.dnav a')[idx]?.classList.add('on');
+  document.querySelectorAll('.tabbar a')[idx]?.classList.add('on');
+
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+
+  if(tab==='library')   renderLibrary();
+  if(tab==='myartists') renderArtists();
+  if(tab==='foryou' && myArtists.length) buildRecs();
+}
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').innerHTML = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.onerror = (msg, src, line, col, err) => {
+  console.error('KazPicks error:', msg, 'line', line, err);
+  const sb = document.getElementById('status-bar');
+  if(sb) sb.innerHTML = `<span style="color:var(--terra)">Error line ${line}: ${msg}</span>`;
+};
+
+try {
+  const CACHE_VERSION = '12';
+  if(localStorage.getItem('wl_v') !== CACHE_VERSION){
+    ['wl_mb_cache'].forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem('wl_v', CACHE_VERSION);
+    mbReleasesCache = {};
   }
-  const tag = e.target.closest('.tag');
-  if(tag && tag.parentElement.classList.contains('tag-row')){
-    tag.parentElement.querySelectorAll('.tag').forEach(x=>x.classList.remove('on'));
-    tag.classList.add('on');
-  }
-});
+  setHeroDate();
+  initDatePicker();
+  updateCounts();
+  loadBrowse();
+} catch(e){
+  console.error('Init error:', e);
+  document.getElementById('status-bar').innerHTML = `<span style="color:var(--terra)">Init: ${e.message}</span>`;
+}
+
 </script>
 </body>
 </html>
