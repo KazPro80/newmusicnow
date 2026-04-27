@@ -150,18 +150,22 @@ body.edit-mode .hero-r [contenteditable]:focus{
 
 /* pin button on every row */
 .pin-btn{
-  display:none;
-  position:absolute;top:8px;right:8px;
-  background:var(--paper);border:1.5px solid var(--ink);border-radius:999px;
-  width:32px;height:32px;cursor:pointer;
-  align-items:center;justify-content:center;
-  font-size:14px;color:var(--ink);
+  position:absolute;top:6px;right:6px;
+  background:rgba(255,255,255,0.92);border:1.5px solid var(--ink);border-radius:999px;
+  width:28px;height:28px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--ink);
   transition:all 0.12s;z-index:5;
+  opacity:0;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
-.pin-btn:hover{background:var(--yellow);border-color:var(--yellow-deep);}
-.pin-btn.pinned{background:var(--yellow);border-color:var(--yellow-deep);}
-body.edit-mode .pin-btn{display:flex;}
 .row-sleeve{position:relative;}
+.row-item:hover .pin-btn{opacity:1;}
+.pin-btn:hover{background:var(--yellow);border-color:var(--yellow-deep);transform:scale(1.08);}
+.pin-btn.pinned{opacity:1;background:var(--yellow);border-color:var(--yellow-deep);}
+@media (max-width:640px){
+  .pin-btn{opacity:1;}
+}
 
 /* Wall slot empty placeholders in edit mode */
 .wall-slot-empty{
@@ -1175,7 +1179,7 @@ function rowCard(rel){
         ${rel.img?`<img src="${esc(rel.img)}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" onerror="this.remove()">`:''}
         <span class="art-fb">${inits(rel.title)}</span>
       </div>
-      <button class="pin-btn ${pinned?'pinned':''}" onclick="event.stopPropagation();${pinned?'unpinFromWall':'pinToWall'}('${esc(rel.id)}')" title="${pinned?'Unpin from wall':'Pin to wall'}">${pinned?'✓':'⊕'}</button>
+      <button class="pin-btn ${pinned?'pinned':''}" onclick="event.stopPropagation();${pinned?'unpinFromWall':'pinToWall'}('${esc(rel.id)}')" title="${pinned?'Unpin from wall':'Pin to wall'}">${pinned?'📌':'📍'}</button>
     </div>
     <div class="row-body">
       <div class="row-kicker">
@@ -1314,7 +1318,7 @@ function renderBrowse(){
     wallSec.style.display = 'block';
     const wallHtml = [0,1,2].map(i => wallCard(wallReleases[i] || null)).join('');
     document.getElementById('wall').innerHTML = wallHtml;
-    document.getElementById('wall-count').textContent = `${wallReleases.length} of 3 picks · click ⊕ on any record below to pin`;
+    document.getElementById('wall-count').textContent = `${wallReleases.length} of 3 picks · hover any record below and tap 📍 to pin`;
   } else {
     wallSec.style.display = 'none';
   }
